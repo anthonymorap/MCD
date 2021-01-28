@@ -1,0 +1,418 @@
+---
+title: "Examen Final"
+author: "Anthony Mora - ID:1097694"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: zenburn
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r funciones, message=FALSE}
+library(tidyverse)
+
+# Calcula la varianza en comun 
+var_comun = function(var1, n1, var2, n2) {
+ (((n1 - 1)*var1) + ((n2 - 1)*var2)) / ((n1 - 1) + (n2 - 1))
+}
+
+# t estadistico para medias con igual varianza
+t_var_iguales = function(mean1, n1, mean2, n2, var) {
+  ((mean1 - mean2) - 0) / (sqrt((var/n1)+(var/n2)))
+}
+
+# Calcula grados de libertad de dos medias con distintas varianzas
+gl.means.distintas = function(var1, var2, n1, n2){
+  (((var1/n1) + (var2/n2))^2) / (((((var1/n1)^2)/(n1 - 1)) + (((var2/n2)^2)/(n2 -1))))
+}
+
+# Calcula grados de libertad de dos medias con iguales varianzas
+gl.means.iguales = function(var, n1, n2){
+  (((var/n1) + (var/n2))^2) / (((((var/n1)^2)/(n1 - 1)) + (((var/n2)^2)/(n2 -1))))
+}
+```
+
+## Ejercicio 1
+
+Dos fabricantes de relojes de cuarzo (Romex y Tiddot) fueron sometidos a pruebas de durabilidad. A continuación, se indica el número de días de durabilidad (hasta que deje de funcionar) de una muestra de tamaño 5 de ambas marcas:
+
+
+```{r cars}
+df.1 = data.frame(Romex = c(101.4, 91.3, 108.0, 104.8, 102.2), 
+                         Tiddot = c(118.7, 102.5, 99.4, 129.1, 110.1))
+df.1
+```
+
+a. Calcular la media y la varianza de la muestra de los relojes Romex y Tiddot a partir de las muestras dadas.
+
+```{r}
+medias = colMeans(df.1)
+varianzas = apply(df.1, 2, var)
+desviaciones = sqrt(varianzas)
+```
+
+Las medias calculadas corresponden a `r medias["Romex"]` días para los fabricantes de Romex y `r medias["Tiddot"]` días para los relojes de Tiddot, por lo que pareciera ser que los relojes de Tiddot tienen una mayor durabilidad que los relojes de Romex.
+
+Mientras que al analizar la varianza vemos que la medida de dispersión para los relojes Romex nos da `r varianzas["Romex"]` para los relojes de Romex y `r varianzas["Tiddot"]` para Tiddot, indicando que las observaciones de Romex se acercan más a su promedio que los relojes Tiddot. Esto pudiera apoyar un argumento de confiar más en el promedio de durabilidad de relojes Romex que en el promedio de la opción Tiddot.
+
+b. Sea μX la durabilidad media de la población de los relojes Romex y que μY la durabilidad media de la población de los relojes Tiddot. Pruebe la hipótesis de que μX = μY contra la alternativa de que μX ≠μY con un nivel de significación del 5%. Indique cualquier suposición realizada y dé el valor p aproximado de la prueba.
+
+```{r }
+n = length(df.1$Romex)
+diff = medias["Romex"] - medias["Tiddot"]
+sd.error = sqrt((varianzas["Romex"]/length(df.1$Romex))+(varianzas["Tiddot"]/length(df.1$Romex)))
+gl = gl.means.distintas(varianzas["Romex"], varianzas["Tiddot"],n,n)
+t.obs = diff / sd.error
+t.crit = qt(0.025, gl)
+pvalue = 2*pt(t.obs, gl)
+```
+
+$$H_0:\mu_1 = \mu_2$$
+$$H_1:\mu_1 \neq \mu_2$$
+
+
+```{r prueba de medias t.test}
+test = t.test(df.1["Romex"], df.1["Tiddot"], var.equal = FALSE)
+print(test)
+```
+
+Una prueba de diferencia de medias nos arroja un p-value de `r round(test[["p.value"]],2)` , valor superior al nivel de significancia de 0.05, por lo que no tenemos evidencia para rechazar la hipótesis nula, ninguno de los relojeros presenta productos con mayor durabilidad que el otro.
+
+
+## Ejercicio 2
+
+Se encontró que las notas de una muestra aleatoria de estudiantes de economía eran las siguientes: 20, 34, 79, 94, 41, 42, 50. El departamento de economía desea saber si la media de todos los resultados de los exámenes fue significativamente más alta que la nota de aprobación de 40. Realice una prueba de hipótesis adecuada a un nivel de significación del 5%. Tras la introducción de un servicio de apoyo a los estudiantes, se tomó una segunda muestra aleatoria de siete estudiantes diferentes, con los siguientes resultados: 19, 20, 34, 94, 99, 81, 41. A un nivel de significación del 5% se prueba la hipótesis.
+
+```{r data-ejercicio2}
+df.2 = data.frame(clase1 = c(20, 34, 79, 94, 41, 42, 50), 
+                         clase2 = c(19, 20, 34, 94, 99, 81, 41))
+df.2
+```
+
+$$H_0:\mu_X = \mu_Y$$
+
+$$H_1:\mu_X \neq \mu_Y$$
+
+Donde $\mu_X$ y $\mu_Y$ son los resultados promedios de los estudiantes sin y con el servicio de apoyo a los estudiantes, respectivamente, prepare el análisis 
+
+
+```{r}
+n = length(df.2$clase1)
+medias = colMeans(df.2)
+varianzas = apply(df.2, 2, var)
+desviaciones = sqrt(varianzas)
+t.obs = (medias["clase1"] - 40) / (desviaciones["clase1"]/sqrt(n))
+t.crit = qt(0.95, n-1)
+p.value = pt(t.obs, n-1, lower.tail = FALSE)
+```
+
+```{r }
+test = t.test(df.2["clase1"], mu = 40, alternative = "greater")
+print(test)
+```
+Al realizar una prueba de hipótesis para comprobar si el promedio de notas era superior a 40 puntos, la prueba presenta un P-value de `r round(test[["p.value"]],2)`, valor mayor que el nivel de significancia de 0.05. Por lo que no tenemos evidencia suficiente para rechazar la hipótesis nula, no podemos asumir que el promedio de los estudiantes es superior a 40 puntos.
+
+
+
+a. Suponiendo que las dos poblaciones de estudiantes tienen varianzas iguales
+
+```{r}
+diff = medias["clase1"] - medias["clase2"]
+var.comun = var_comun(varianzas["clase1"],n,varianzas["clase2"],n)
+sd.error = sqrt(var.comun*((1/n)+(1/n)))
+t.obs = diff / sd.error
+gl = n + n - 2
+t.crit = qt(0.025, gl)
+p.value = 2*pt(t.obs, gl, lower.tail = FALSE)
+
+```
+
+```{r}
+test = t.test(df.2["clase1"], df.2["clase2"], var.equal = TRUE)
+print(test)
+```
+Una prueba de diferencia de medias nos arroja un p-value de `r round(test[["p.value"]],2)` , valor superior al nivel de significancia de 0.05, por lo que no tenemos evidencia para rechazar la hipótesis nula, por lo que no existe diferencia significativa entre los promedios de ambas clases.
+
+
+b. Suponiendo que las dos poblaciones de estudiantes tienen varianzas desiguales.
+
+```{r}
+diff = medias["clase1"] - medias["clase2"]
+sd.error = sqrt((varianzas["clase1"]/n)+(varianzas["clase2"]/n))
+t.obs = diff / sd.error
+gl = gl.means.distintas(varianzas["clase1"],varianzas["clase2"],n,n)
+t.crit = qt(0.025, gl)
+p.value = 2*pt(t.obs, gl)
+
+```
+
+```{r}
+test = t.test(df.2["clase1"], df.2["clase2"], var.equal = FALSE)
+print(test)
+```
+Una prueba de diferencia de medias nos arroja un p-value de `r round(test[["p.value"]],2)` , valor superior al nivel de significancia de 0.05, por lo que no tenemos evidencia para rechazar la hipótesis nula, por lo que no existe diferencia significativa entre los promedios de ambas clases.
+
+
+
+
+## Ejercicio 3
+
+El servicio de apoyo al estudiante afirma en un periódico estudiantil que el 60% de los estudiantes que utilizan el servicio lo encuentran beneficioso para sus estudios. Una encuesta independiente de 200 estudiantes que han usado el servicio de apoyo al estudiante encontró que 132 de los 200 declararon que el uso del servicio sí mejoró sus estudios. Usando los resultados de esta encuesta independiente, prueba la validez de la afirmación de que el 60% de los estudiantes que usan el servicio de apoyo piensan que beneficia sus estudios en un nivel de significación del 5%.
+
+$$H_0:P \ge 60\%$$
+
+$$H_1:P < 60\%$$
+
+```{r datos ejercicio 3}
+p.obs = 132/200
+n = 200
+p = 0.6
+alpha = 0.05
+```
+
+
+```{r}
+ee = sqrt((p*(1-p))/n)
+z.obs = (p.obs - p) / ee
+z.crit = qnorm(0.95)
+pvalue = pnorm(z.obs, lower.tail = FALSE)
+```
+
+Al realizar una prueba de hipótesis para la proporción tenemos un P-value de `r round(pvalue,2)`, valor inferior al nivel de significancia de 0.05. Por lo que tenemos suficiente evidencia para rechazar la hipótesis nula, la proporción de estudiantes que usan el servicio y piensan que benefician sus estudios sería menos del 60%.
+
+## Ejercicio 4
+
+Un investigador de una comisión de control portuario desea decidir si el número de barcos que llegan al puerto sigue una distribución de Poisson con una media μ = 1.0. El investigador contó el número de barcos que llegan cada hora para una muestra aleatoria de 70 h y obtuvo las frecuencias de muestra como se indica en la siguiente tabla:
+
+
+| Número de buques que llegan 	| Frecuencia 	|
+|:---------------------------:	|:----------:	|
+|              0              	|     42     	|
+|              1              	|     21     	|
+|              2              	|      7     	|
+|           3 o más           	|      0     	|
+
+Comprobar la hipótesis de que el número de buques que llegan al puerto sigue una distribución de Poisson con una media $\mu = 1.0$ a un nivel de significación del 5%.
+
+$$H_0: \text{El número de buques que pasa por hora sigue una distribución poisson.} $$
+$$H_1: \text{El número de buques que pasa por hora no sigue una distribución poisson.} $$
+
+```{r data-ejercicio4}
+df.4 = data.frame(buques_1h = c("0","1","2","3 o  más"), frecuencia_observada = c(42,21,7,0))
+
+df.4 = df.4 %>% 
+  mutate(probabilidad_poisson = round(c(dpois(c(0,1,2), lambda = 1), 
+                    ppois(2, lambda = 1, lower.tail = FALSE)),2),
+         frecuencia_esperada = round(probabilidad_poisson*sum(frecuencia_observada),2))
+
+df.4
+```
+Para comprobar si la cantidad de buques que pasan por hora presenta una distribución poisson, debemos comparar la frecuencia observada por hora contra lo que sería la frecuencia esperada de una distribución poisson.
+
+```{r tabla, echo=TRUE}
+gl = length(df.4$buques_1h) - 2
+chi2.obs = sum((df.4$frecuencia_observada - df.4$frecuencia_esperada)^2/df.4$frecuencia_esperada)
+p.value = pchisq(chi2.obs, gl, lower.tail = FALSE)
+```
+
+
+Luego de realizar una prueba chi-cuadrada para analizar que tanto se ajustan nuestros valores observados a una distribución poisson obtenemos un p-value de `r p.value`, número inferior al nivel de significancia de 0.05. Por lo que tenemos suficiente evidencia para rechazar la hipótesis nula, la cantidad de buques que pasa por hora no presenta una distribución poisson.
+
+
+
+## Ejercicio 5
+
+En la siguiente tabla se indican las longitudes 𝑥 y las circunferencias de la cabeza 𝑦 de diez peces rojos “redfish” , siendo todas las medidas en centímetros.
+
+
+```{r data-ejercicio5}
+df.5 = data.frame(x = seq(from = 23, to = 32), y = c(15.6,17.3,17.9,18.4,19.1,20.1,20.8,21.8,22.3,22.8))
+
+df.5
+```
+
+a. Prepare el diagrama de dispersión. Interprete
+
+```{r}
+df.5 %>% 
+  ggplot(aes(x = x, y = y)) +
+  geom_point(col = "blue") + 
+  labs(title = "Características cabezas de peces rojos",
+       x = "Longitud",
+       y = "Circunferencia")
+```
+
+Existe una relación positiva entre la longitud y la circunferencia de la cabeza de estos peces. Entre más largas las cabezas, estas tienen una mayor circunferencias.
+
+b. Obtenga las estimaciones del modelo de regresión y escriba la ecuación de regresión obtenida. Interprete la pendiente
+
+```{r}
+modelo.5 = lm(y ~ x, data = df.5)
+stats.modelo.5 = summary(modelo.5)
+summary(modelo.5)
+```
+Por cada centímetro adicional de longitud en la cabeza de un redfish, su circunferencia aumentará en `r round(modelo.5[["coefficients"]][["x"]],2)` centímetros.
+
+c. Estime el coeficiente de correlación de Pearson. ¿Es significativa la correlación entre x e y?, use α=0.02
+
+```{r}
+cor.pear = cor.test(df.5$x, df.5$y, conf.level = 0.98)
+cor.pear
+```
+El coeficiente de correlación estimado sería de `r round(cor.pear[["estimate"]][["cor"]],2)`. Con un nivel de confianza del 98% tenemos suficiente evidencia para demostrar que esta estimación es significativa, ya que el p-value es practicamente 0.
+
+
+d. Probar la hipótesis nula de que la pendiente de la línea que relaciona 𝑥 y 𝑦 es igual a cero a un nivel de significación del 2%.
+
+La tabla en el ejercicio b muestra que la pendiente es significativa para un nivel de confianza del 98%.
+
+
+e. Calcular el intervalo (predicción individual y promedio) de confianza del 95% para el perímetro de la cabeza de un pez de 23 cm de longitud. Interprete los resultados de los intervalos
+
+
+```{r}
+inter.p = predict(modelo.5, newdata = data.frame(x = 23), interval = "p")
+inter.p
+```
+Con un nivel de confianza del 95% el intervalo (`r paste(round(inter.p[2],2),","," ", round(inter.p[3],2), sep = "")`) contiene el verdadero valor de la circunferencia para una cabeza de 23 cm de longitub. La estimación de la circunferencia para una cabeza de 23 cm de longitud sería `r round(inter.p[1],2)`cm.
+
+## Ejercicio 6
+
+Se investigó la concentración de una determinada especie de bacteria que a veces se encuentra en el agua dulce. Se tomaron muestras de cuatro lugares diferentes, y las concentraciones (en millones de bacterias por litro de agua) se presentan en la siguiente tabla:
+
+```{r }
+df.6 = data.frame(lugar1 = c(4.14,4.15,4.12),
+                  lugar2 = c(4.91,5,5.07),
+                  lugar3 = c(4.27,4.27,4.43),
+                  lugar4 = c(4.09,4.23,4.12))
+
+df.6
+
+data.6 <- data.frame(
+ lugar = c(rep(paste('Lugar', 1:4), 3)),
+ nivel = c(4.14, 4.91, 4.27, 4.09, 4.15, 5.00, 4.27, 4.23, 4.12, 5.07, 4.43,
+4.12)
+)
+
+```
+
+Determine si hay diferencias significativas entre las concentraciones medias de los cuatro lugares. Utilizar una prueba de comparación múltiple para determinar cuál de los lugares, si es que hay alguno, tiene concentraciones significativamente más altas. Utilizar un nivel de significación del 5% en todo.
+
+```{r}
+anova.6 <- aov(nivel ~ lugar, data = data.6)
+stats.anova.6 <- summary(anova.6)
+stats.anova.6
+```
+
+```{r}
+n.total = length(data.6$nivel)
+n = length(df.6$lugar1)
+k = length(df.6)
+medias.6 <- colMeans(df.6) 
+varianzas.6 <- apply(df.6, 2, var)
+media.global <- mean(data.6$nivel)
+suma2.grupos <- sum((medias.6 - media.global)^2)
+var.entre.grupos <- suma2.grupos*(n/(k-1))
+var.dentro.grupos <- sum(varianzas.6)*((n-1)/(n.total-k)) 
+f.obs <- var.entre.grupos/var.dentro.grupos
+f.crit <- qf(0.95, k-1, n.total-k)
+p.value <- pf(f.obs, k-1, n.total-k, lower.tail = FALSE)
+```
+
+Luego de realizar una prueba ANOVA obtuvimos un p-value de `r p.value` menor que el nivel de significancia de 0.05, por lo que tenemos suficiente evidencia para rechazar la hipótesis nula y decir que existen diferencias significativas entre las concentraciones promedio de bacterias para estos lugares.
+
+```{r}
+data.6 %>% 
+  ggplot(aes(nivel, col = lugar)) + 
+  geom_boxplot()
+```
+Con el gráfico de boxplot podemos ver como la concentración de bacterias en el lugar 2 es superior a los demas lugares.
+
+```{r}
+pairwise.t.test(data.6$nivel, data.6$lugar, p.adjust.method = "bonferroni")
+```
+Con la prueba de bonferroni obtenemos suficiente evidencia para probar con un nivel de confianza del 95% que la concentración promedio en el lugar 2 es superior a los demás lugares. 
+
+
+## Ejercicio 7
+
+La tabla adjunta proviene de un estudio realizado con el objetivo declarado de abordar la seguridad del teléfono celular al comprender por qué utilizamos un oído en particular para el uso del teléfono celular. (Vea “Hemispheric Dominance and Cell Phone Use”, de Seidman, Siegel, Shah y Bouyer, JAMA Otolaryngology—Head & Neck Surgery, vol. 139, núm. 5). El objetivo era determinar si la elección del oído está asociada con el predominio hemisférico cerebral auditivo o de lenguaje.
+
+
+
+```{r data-ejercicio6}
+df.7 = data.frame(derecho = c(436,16),
+                  izquierdo = c(166,50),
+                  sin.preferencia = c(40,3),
+                  row.names = c("Diestro", "Zurdo"))
+
+df.7
+
+
+
+```
+
+
+a. Prepara un reporte descriptivo de la relación entre las dos variables
+
+```{r}
+prop.table(as.matrix(df.7),1)
+```
+El 68% de las personas diestras utilizan el oído derecho, mientras qu el 72% de los zurdos utilizan el oído izquierdo.
+
+b. Use α =0.05 para decidir sobre la afirmación. Mencione los supuestos que se de deben cumplir para realizar la prueba de hipótesis.
+
+$$H_0: \text{La elección del oído es independiente del hemisferio dominante.} $$
+$$H_1: \text{La elección del oído es no independiente del hemisferio dominante.} $$
+
+
+```{r}
+s.size <- sum(df.7)
+gl <- (length(df.7)-1)*(length(df.7$derecho)-1)
+sum.cols <- colSums(df.7)
+sum.rows <- rowSums(df.7)
+t.sum <- sum(df.7)
+tabla.esp.7 <- matrix(c((sum.cols*sum.rows[1])/s.size,
+                        (sum.cols*sum.rows[2])/s.size),
+                      ncol = 3,
+                      byrow = T)
+chi2.obs <- sum(((df.7-tabla.esp.7)^2)/tabla.esp.7)
+chi2.crit <- qchisq(0.95, gl)
+p.value <- pchisq(chi2.obs,gl, lower.tail = FALSE)
+```
+
+
+```{r message=FALSE}
+test <- chisq.test(df.7)
+test
+```
+Luego de realizar una prueba de independencia obtenemos un p-value de `r p.value`, inferior al nivel de significancia de 0.05. Con esto tenemos evidencia suficiente para rechazar la hipótesis nula, concluyendo que la elección del oído depende del hemisferio dominante.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

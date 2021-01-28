@@ -1,0 +1,263 @@
+---
+title: "Practica semana 3"
+author: "Anthony mora"
+date: "11/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+ee_prop = function(p,n){
+  sqrt((p*(1-p))/n)
+}
+
+ee_media = function(desv,n){
+  desv/sqrt(n)
+}
+```
+
+
+#### Estimaciones y tamaño de la muestra para estimar proporción y media poblacional
+
+1. Estimación de la proporción de una población
+2. Estimación de la media poblacional: σ conocida
+3. Estimación de la media poblacional: σ desconocida
+4. Estimación de la varianza poblacional
+5. Bootstrap
+
+
+#### Ejercicios
+
+1. Se obtiene la siguiente estimación de un intervalo de confianza del 95% para una media poblacional: 10.0 < 𝜇 < 20.0. Interprete ese intervalo de confianza. 
+
+Con un nivel de confianza del 95% el verdadero valor de la media poblacional se encontrará entre 10 y 20.
+
+
+2. Calcule el valor crítico de $t_{\alpha /2}$ para n = 20 y 𝛼 = 0.05. (NC=95%)
+
+```{r echo=FALSE}
+valor_izq = qt(0.025,19)
+valor_der = qt(0.975,19)
+paste("El valor crítico para n = 20 y a = 0.05 será igual a ", round(valor_der,2), sep = "")
+```
+3. Calcule el valor crítico de 𝑡𝛼/2 para n =20 y 𝛼 = 0.10. (NC=90%)
+
+```{r echo=FALSE}
+valor_izq = qt(0.05,19)
+valor_der = qt(0.95,19)
+paste("El valor crítico para n = 20 y a = 0.10 será igual a ", round(valor_der,2), sep = "")
+```
+
+4. Calcule el tamaño de la muestra que se requiere para estimar el porcentaje de estudiantes universitarios que utilizan préstamos para pagar su colegiatura. Suponga que queremos tener un nivel de confianza del 95% de que la proporción de la muestra está dentro de
+dos puntos porcentuales del porcentaje poblacional verdadero. 
+
+```{r echo=FALSE}
+n = ((1.96^2)*0.5*0.5)/(0.02^2)
+paste("El tamaño de la muestra requerido para un nivel de confianza del 95% y un margen de error de 2% será igual a ", n, " estudiantes universitarios", sep = "")
+```
+
+5. En una encuesta de 6OO universitarios elegidos al azar, 240 respondieron afirmativamente que planeaban realizar estudios de
+post-grado. ¿Cuál es la mejor estimación puntual de la proporción poblacional que planea realizar estudios de post-grado?
+
+```{r echo=FALSE}
+n = 600
+p = 240/600
+paste("Aproximadamente el ", round(p*100),"%", " de los estudiantes universitarios planea realizar estudios de postgrado", sep = "")
+```
+
+6. En una encuesta de 6OO universitarios elegidos al azar, 240 respondieron afirmativamente que planeaban realizar estudios de
+post-grado. Construya un intervalo de confianza del 95% para la proporción que planea realizar estudios de post-grado
+
+```{r echo=FALSE}
+ee = ee_prop(240/600,600)
+z = qnorm(0.975)
+E = z*ee
+inter_izq = p-E
+inter_der = p+E
+paste("Para muestras de 600 universitarios con un intervalo de confianza del 95%, la verdadera proporción poblacional de estudiantes que planear realizar estudios de postgrado se encuentra entre ", round(inter_izq*100,2),"%"," y ",round(inter_der*100,2),"%", sep = "")
+```
+
+7. En una encuesta de conductores elegidos al azar, la edad promedio de los 36 participantes es de 40.0 años, y la desviación estándar de las edades es de 10.0 años. Utilice esos resultados muestrales para construir un intervalo de confianza del 95% para la edad promedio de la población de donde se obtuvo la muestra.
+
+
+```{r echo=FALSE}
+n=36
+prom = 40
+desv = 10
+ee = ee_media(desv,n)
+t = qt(0.975,n-1)
+E = ee*t
+inter_izq = prom-E
+inter_der = prom+E
+paste("Para muestras de 36 participantes con un intervalo de confianza del 95%, la verdadera edad media poblacional se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), sep = "")
+```
+
+8. Repita el ejercicio 7 suponiendo que se sabe que la desviación estándar de la población es de 10.0 años. 
+
+```{r echo=FALSE}
+n=36
+prom = 40
+desv = 10
+ee = ee_media(desv,n)
+z = qnorm(0.975)
+E = ee*z
+inter_izq = prom-E
+inter_der = prom+E
+paste("Para muestras de 36 participantes con un intervalo de confianza del 95%, la verdadera edad media poblacional se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), sep = "")
+```
+
+
+
+
+9. Calcule el tamaño de la muestra requerido para estimar la media de la edad de conductores registrados en Republica Dominicana.
+Suponga que queremos tener una confianza del 95% de que la media de la muestra está dentro de medio año de la edad promedio
+verdadera de la población. También suponga que se sabe que la desviación estándar de la población es de 12 años.
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+E = 1/2
+sigma = 12
+n = ((z*sigma)/E)^2
+paste("La muestra requerida para estimar la media de la edad de conductores registrados en RD, con un nivel de confianza del 95% y un margen de error de medio año, será ", round(n), " conductores.", sep="")
+```
+
+
+
+10. Resultados de pruebas de choques. La National Transportation Safety Administration realizó experimentos de pruebas de choques
+en cinco automóviles subcompactos. Los datos de lesiones en la cabeza (en hics, por las siglas de head injury condition) registrados en maniquíes de prueba colocados en el asiento del conductor son los siguientes: 681, 428, 917, 898, 420. Con base en estos resultados muestrales, construya un intervalo de confianza del 95% para la media de medidas de lesión en la cabeza para todos los automóviles subcompactos.
+
+```{r echo=FALSE}
+n = 5
+x = c(681,428,917,898,420)
+prom = mean(x)
+t = qt(0.975,4)
+desv = sd(x)
+ee = (desv/sqrt(n))
+E = t*ee
+inter_izq = prom-E
+inter_der = prom+E
+paste("Para muestras de 5 automóviles subcompactos con un intervalo de confianza del 95%, la verdadera  media poblacional de lesiones en la cabeza se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), sep = "")
+```
+
+11.Intervalo de confianza para 𝝈. Se consideran las nuevas especificaciones para el diseño de automóviles con la finalidad de
+controlar la variación de las medidas de lesiones en la cabeza. Utilice los mismos datos del ejercicio 10 para construir un intervalo de confianza del 95% para 𝝈.
+
+```{r echo=FALSE}
+n = 5
+x = c(681,428,917,898,420)
+desv = sd(x)
+
+chi_D = qchisq(0.975,4)
+chi_I = qchisq(0.025,4)
+inter_izq = sqrt(((n-1)*desv^2)/chi_D)
+inter_der = sqrt(((n-1)*desv^2)/chi_I)
+paste("Con un nivel de confianza del 95%, el verdadero valor poblacional de la desviación estándar se encuentra entre ", round(inter_izq,2), " y ", round(inter_der,2), sep="")
+
+
+```
+12. Encuesta sobre clonación. Una encuesta Gallup incluyó a 1012 adultos seleccionados al azar, a quienes se preguntó si “se debe
+permitir o no la clonación de los seres humanos”. Los resultados revelaron que 901 adultos encuestados indicaron que no se debe
+permitir la clonación.
+
+a. Calcule la mejor estimación puntual de la proporción de los adultos que creen que no se debe permitir la clonación de seres
+humanos.
+
+```{r echo=FALSE}
+n = 1012
+p = 901/n
+paste("La proporción de adultos que creen que no se debe permitir la clonación de seres humanos es aproximadamente ", round(p*100,2), "%", sep="")
+```
+b. Construya un intervalo de confianza del 95% para la proporción de los adultos que creen que no se debe permitir la clonación de
+seres humanos.
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+ee = sqrt((p*(1-p))/n)
+E = z*ee
+inter_izq = p-E
+inter_der = p+E
+paste("Con un nivel de confianza del 95%, podemos concluir que el verdadero valor poblacional de la porporción de adultos que creen que no se debe permitir la clonación de seres humanos, se encuentra entre ", round(inter_izq*100,2),"%"," y ",round(inter_der*100,2),"%", sep = "")
+```
+c. Un reportero de noticias quiere determinar si estos resultados de encuesta constituyen una firme evidencia de que la mayoría (más
+del 50%) de las personas se oponen a este tipo de clonación. Con base en los resultados, ¿existen evidencias firmes que apoyen la
+afirmación de que la mayoría de las personas se oponen a este tipo de clonación? ¿Por qué? 
+
+Si, porque el verdadero valor poblacional de la proporción de adultos que entiende que no se debe permitir la clonación se encuentra entre 87% y 91%.
+
+
+13. Vidrio desechado. A continuación, se incluyen los pesos (en libras) del vidrio desechado en una semana por hogares seleccionados al azar (según datos del Garbage Project de la Universidad de Arizona).
+
+```{r echo=FALSE}
+x = c(3.52,8.87,3.99,3.61,2.33,3.21,0.25,4.94)
+n = 8
+```
+
+
+a. ¿Cuál es la mejor estimación puntual del peso medio del vidrio desechado por los hogares en una semana? 
+
+```{r echo=FALSE}
+prom = mean(x)
+paste("El peso medio del vidrio desechado por los hogares en una semana es aproximadamente", prom, "libras")
+```
+
+b. Construya un intervalo de confianza del 95% para el peso medio del vidrio desechado por todos los hogares. 
+
+```{r echo=FALSE}
+t = qt(0.975,n-1)
+ee = sd(x)/sqrt(n)
+E = t*ee
+inter_izq = prom-E
+inter_der = prom+E
+paste("Con un nivel de confianza del 95% concluimos que el peso medio del vidrio desechado por todos los hogares se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), " libras", sep = "")
+
+```
+c. Repita el inciso b) suponiendo que la población se distribuye normalmente, con una desviación estándar conocida de 3.108 libras. 
+
+```{r echo=FALSE}
+desv = 3.108
+z = qnorm(0.975)
+ee = desv/sqrt(n)
+E = z*ee
+inter_izq = prom-E
+inter_der = prom+E
+paste("Con un nivel de confianza del 95% concluimos que el peso medio del vidrio desechado por todos los hogares se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), " libras", sep = "")
+```
+
+
+14. Intervalos de confianza para $\sigma$ y $\sigma^2$
+
+a. . Utilice los datos muestrales del ejercicio 9 para construir un intervalo de confianza del 95% para la desviación estándar
+poblacional. 
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+E = 1/2
+sigma = 12
+n = round(((z*sigma)/E)^2)
+chi_D = qchisq(0.975,n-1)
+chi_I = qchisq(0.025,n-1)
+inter_izq = sqrt(((n-1)*(sigma^2))/chi_D)
+inter_der = sqrt(((n-1)*(sigma^2))/chi_I)
+paste("Con un nivel de confianza del 95%, el verdadero valor poblacional de la desviación estándar se encuentra entre ", round(inter_izq,2), " y ", round(inter_der,2), sep="")
+```
+b. Utilice los datos muestrales del ejercicio 9 para construir un intervalo de confianza del 95% para la varianza poblacional.
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+E = 1/2
+sigma = 12
+n = round(((z*sigma)/E)^2)
+chi_D = qchisq(0.975,n-1)
+chi_I = qchisq(0.025,n-1)
+inter_izq = ((n-1)*(sigma^2))/chi_D
+inter_der = ((n-1)*(sigma^2))/chi_I
+paste("Con un nivel de confianza del 95%, el verdadero valor poblacional de la varianza se encuentra entre ", round(inter_izq,2), " y ", round(inter_der,2), sep="")
+```
+
+
+
+
+

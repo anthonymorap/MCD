@@ -1,0 +1,319 @@
+---
+title: "Ejercicios Bootstrap"
+author: "Anthony mora"
+date: "12/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+col_sd = function(x) {
+  apply(x, 2, sd)
+}
+
+muestreo = function(x, n, s) {
+  muestra = numeric()
+  for (i in 1:n) {
+    v = sample(x, s, replace = TRUE)
+    muestra = cbind(muestra, v)
+  }
+  return(muestra)
+}
+
+ee_media = function(x,n){
+  desv = sd(x)
+  desv/sqrt(n)
+}
+```
+
+
+1. Sustitución. ¿Por qué el método bootstrap requiere muestreo con reemplazo? ¿Qué sucedería si usáramos los métodos de esta sección pero muestramos sin reemplazo?
+
+Si no utilizaramos reemplazo todas las muestras bootstrap serían identicas.
+
+3. Muestra bootstrap. Considere los datos muestrales del ejercicio 2, ¿Cuáles de las siguientes opciones no son posibles muestras bootstrap?
+
+Muestra: 12, 19, 13, 43, 15
+
+a. 12, 19, 13, 43, 15
+b. 12, 19, 15
+c. 12, 12, 12, 43, 43
+d. 14, 20, 12, 19, 15
+e. 12, 13, 13, 12, 43, 15, 19
+
+Las opciones posibles tienen que tener la misma cantidad de elementos y no pueden tener elementos que no esten contenidos en la muestra inicial. Por lo que las opciones posibles son a y c.
+
+5. Compras en línea. En una encuesta del Centro de Investigación de Informes del Consumidor, a las mujeres se les preguntó si compraban libros en línea, y las respuestas incluían lo siguiente: no, sí, no, no. Si "sí" = 1 y "no" = 0, aquí hay diez muestras bootstrap para tales respuestas:
+
+```{r echo=FALSE}
+x1 = c(0,0,0,0)
+x2 = c(1,0,1,0)
+x3 = c(1,0,1,0)
+x4 = c(0,0,0,0)
+x5 = c(0,0,0,0)
+x6 = c(0,1,0,0)
+x7 = c(0,0,0,0)
+x8 = c(0,0,0,0)
+x9 = c(0,1,0,0)
+x10 = c(1,1,0,0)
+
+muestras = cbind(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10)
+print(muestras)
+```
+Utilizando sólo las diez muestras bootstrap proporcionadas, contruya una estimación del intervalo de confianza del 90% para la proporción de mujeres que afirman comprar libros en línea.
+
+```{r echo=FALSE}
+proporciones = sort(colMeans(muestras))
+print(proporciones)
+
+quantile(proporciones, c(0.05, 0.95))
+
+```
+Con un nivel de confianza del 90% concluimos que la proporción de mujeres que compran libros en línea se encuentra entre $0\% < p < 50\%$.
+
+7. Novato 15. La siguiente es una muestra de los cambios de peso(kg) de estudiantes universitarios en su primer año (del conjunto de datos 6 "Novato 15" en el apéndice B): 11, 3, 0, -2, donde -2 representa una pérdida de 2 kg y los valores positivos representan el peso ganado. A continuación se presentan diez muestras bootstrap:
+
+```{r echo=FALSE}
+x1 = c(11,11,11,0)
+x2 = c(11,-2,0,11)
+x3 = c(11,-2,3,0)
+x4 = c(3,-2,0,11)
+x5 = c(0,0,0,3)
+x6 = c(3,-2,3,-2)
+x7 = c(11,3,-2,0)
+x8 = c(-2,3,-2,3)
+x9 = c(-2,0,-2,3)
+x10 = c(3,11,11,11)
+
+muestras = cbind(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10)
+print(muestras)
+```
+
+a. Usando sólo las diez muestras bootstrap proporcionadas, construya una estimación del intervalo de confianza del 80% para el cambio de peso medio en la población.
+
+```{r echo=FALSE}
+medias = sort(colMeans(muestras))
+print(medias)
+
+quantile(medias, c(0.1, 0.9), type = 2)
+
+```
+
+Con un nivel de confianza del 80% concluimos que el cambio de peso medio poblacional se encuentra entre $0.125 < \mu < 8.625$.
+
+
+
+b. Usando sólo las diez muestras bootstrap proporcionadas, construya una estimación del intervalo de confianza del 80% para la desviación estándar de los cambios de peso en la población.
+
+```{r echo=FALSE}
+sd = sort(col_sd(muestras))
+print(sd)
+
+quantile(sd, c(0.1, 0.9), type = 2)
+
+```
+
+Con un nivel de confianza del 80% concluimos que la desviación estándar de los cambios de peso en la población se encuentra entre $1.93 < \sigma < 6.35$.
+
+
+9. Novato 15. Repita el ejercicio 7 "Novato 15" usando un nivel de confianza del 90% para los incisos (a) y (b) y empleando 1000 muestras bootstrap en lugar de las 10 que se dieron en ese ejercicio.
+
+```{r echo=FALSE}
+novato15 = c(11,3,0,-2)
+print(novato15)
+```
+
+a. 
+
+```{r echo=FALSE}
+muestra = numeric()
+for (i in 1:1000) {
+  v = sample(novato15, 4, replace = TRUE)
+  muestra = cbind(muestra, v)
+}
+
+medias = sort(colMeans(muestra))
+quantile(medias, c(0.05, 0.95), type = 2)
+```
+Concluimos que para un total de 1000 muestras y un nivel de confianza del 95% los cambios promedios población se encuentran entre $-0.75 < \mu < 7$.
+
+
+b. 
+
+```{r echo=FALSE}
+sd = sort(col_sd(muestra))
+
+quantile(sd, c(0.05, 0.95), type = 2)
+```
+Concluimos que para un total de 1000 muestras y un nivel de confianza del 95% la desviación estándar de los cambios promedios de la población se encuentran entre $1.08 < \sigma < 6.98$.
+
+
+11.  Citas rápidas. Use las siguientes medidas masculinas del atractivo femenino dadas en el ejercicio 17 "Citas rápidas" de la sección 7-2 pag 329: Use bootstrap con 1000 muestras.
+
+```{r echo=FALSE}
+ejercicio11 = c(7,8,2,10,6,5,7,8,8,9,5,9)
+print(ejercicio11)
+
+```
+
+
+a. Construya una estimación del intervalo de confianza del 99% para la media poblacional. ¿Es dramáticamente diferente el resultado del intervalo de confianza al 99%?
+
+```{r echo=FALSE}
+muestra = numeric()
+for (i in 1:1000) {
+  v = sample(ejercicio11, 12, replace = TRUE)
+  muestra = cbind(muestra, v)
+}
+
+medias = sort(colMeans(muestra))
+quantile(medias, c(0.005, 0.995), type = 2)
+```
+El intervalo $5.29 < \mu < 8.46$, no es tan diferente de $5 < \mu < 9$
+
+b. Construya una estimación del intervalo de confianza del 95% para la desviación estándar poblacional. ¿Es dramáticamente diferente el resultado del intervalo de confianza al 95%?
+
+```{r echo=FALSE}
+muestra = numeric()
+for (i in 1:1000) {
+  v = sample(ejercicio11, 12, replace = TRUE)
+  muestra = cbind(muestra, v)
+}
+
+sd = sort(col_sd(muestra))
+quantile(sd, c(0.05, 0.95), type = 2)
+```
+El intervalo $1.24 < \sigma < 2.81$, no es tan diferente de $1.6 < \sigma < 3.8$
+
+13. Mickey D’s. En un estudio sobre la precisión de los pedidos de comida rápida, MCDonalds's tuvo 33 pedidos que no fueron precisos entre los 362 pedidos observados (según datos de la revista QSR). Utilice bootstrap para construir una estimación del intervalo de confianza del 95% para la proporción de pedidos que no son precisos. Use 1,000 muestras bootstrap. ¿Cómo se compara el resultado con el intervalo de confianza encontrado en el ejercicio 13?
+
+```{r echo=FALSE}
+ejercicio13 = c(rep(1,33),rep(0,362-33))
+muestras = muestreo(ejercicio13, 1000, 362)
+
+proporciones = sort(colMeans(muestras))
+quantile(proporciones, c(0.05, 0.95))
+
+```
+El intervalo $0.066 < p < 0.116$, es bastante cercano al intervalo de $0.0615 < p < 0.121$
+
+
+15. Tasa de retorno de la encuesta. En un estudio sobre el uso de teléfonos celulares y el dominio hemisférico del cerebro, se envió un cuestionario por Internet a 5,000 sujetos seleccionados aleatoriamente de un grupo otológico en línea (centrado en los oídos) y 717 encuestas fueron devueltas. Use el bootstrap´para construir una estimación del intervalo de confianza del 90% para la proporción de encuestas devueltas. Use 1,000 muestras bootstrap. ¿Cómo se compara este resultado con el del intervalo de confianza en el ejercicio 15 pag 312?
+
+
+```{r echo=FALSE}
+ejercicio15 = c(rep(1,717),rep(0,5000-717))
+muestras = muestreo(ejercicio15, 1000, 5000)
+
+proporciones = sort(colMeans(muestras))
+quantile(proporciones, c(0.05, 0.95))
+
+```
+El intervalo $0.135 < p < 0.151$, es básicamente el mismo intervalo de $0.135 < p < 0.152$
+
+
+17. Evaluaciones de estudiantes. A continuación se listan las calificaciones dadas por estudiantes a sus cursos, donde una calificación de 5 equivale a excelente. Usando bootstrap con 1,000 muestras construya un intervalo de confianza de 90% para $\mu$. ¿Cómo se compara el resultado con el intervalo del ejercicio 23 pag 330?
+
+```{r echo=FALSE}
+ejercicio17 = c(3.8,3,4,4.8,3,4.2,3.5,4.7,4.4,4.2,4.3,3.8,3.3,4,3.8)
+print(ejercicio17)
+```
+
+
+```{r echo=FALSE}
+muestras = muestreo(ejercicio17, 1000, length(ejercicio17))
+
+medias = sort(colMeans(muestras))
+quantile(medias, c(0.05, 0.95))
+
+```
+
+El intervalo $3.71 < \mu < 4.13$, es muy cercano a el intervalo de $3.67 < p < 4.17$
+
+
+
+19.  Old Faithful. Use los siguientes tiempos de duración de las erupciones.
+
+```{r echo=FALSE}
+ejercicio19 = c(125,203,205,221,225,229,233,233,235,236,236,237,238,238,239,240,240,240,240,241,241,242,242,242,243,243,244,245,245,245,245,246,246,248,248,248,249,249,250,251,252,253,253,255,255,256,257,258,262,264)
+print(ejercicio19)
+```
+a. Utilice bootstrap con 1,000 muestras para encontrar un intervalo de confianza de 95% para $\mu$
+
+```{r echo=FALSE}
+muestras = muestreo(ejercicio19, 1000, length(ejercicio19))
+
+medias = sort(colMeans(muestras))
+quantile(medias, c(0.025, 0.975))
+
+```
+Conlcuimos que para un nivel de confianza del 95% el promedio de erupciones de Old Faithful se encuentra entre $233.76 < \mu < 244.74$
+
+b. Encuentre la estimación del intervalo de confianza del 95% para $\mu$ determinada mediante los métodos de la sección 7-2.
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+prom = mean(ejercicio19)
+ee = ee_media(ejercicio19, length(ejercicio19))
+E = z*ee
+inter_izq = prom-E
+inter_der = prom+E
+paste("Para muestras de 50 erupciones con un intervalo de confianza del 95%, la duración promedio de las erupciones se encuentra entre ", round(inter_izq,2)," y ",round(inter_der,2), sep = "")
+
+```
+
+c. Compare resultados.
+
+El intervalo $233.76 < \mu < 244.74$, es muy cercano a el intervalo de $234.57 < \mu < 245.87$
+
+21. Análisis de los últimos dígitos. El peso de varios encuestados se registró como parte de la Entrevista de Salud en California. A continuación se listan los últimos dígitos de los pesos de 50 encuestados seleccionados al azar.
+
+```{r echo=FALSE}
+ejercicio21 = c(5,0,1,0,2,0,5,0,5,0,3,8,5,0,5,0,5,6,0,0,0,0,0,0,8,5,5,0,4,5,0,0,4,0,0,0,0,0,8,0,9,5,3,0,5,0,0,0,5,8)
+print(ejercicio21)
+```
+
+a. Utilice bootstrap con 1,000 muestras a fin de encontrar un intervalo de confianza del 95% para $\sigma$
+
+```{r echo=FALSE}
+muestra = muestreo(ejercicio21,1000, length(ejercicio21))
+
+sd = sort(col_sd(muestra))
+quantile(sd, c(0.025, 0.975))
+```
+Conlcuimos que para un nivel de confianza del 95% la desviación estándar de los pesos de los encuestados se encuentra entre $2.43 < \sigma < 3.33$
+
+
+b. Encuentre con los métodos anteriores.
+
+```{r echo=FALSE}
+z = qnorm(0.975)
+n = length(ejercicio21)
+sigma = sd(ejercicio21)
+chi_D = qchisq(0.975,n-1)
+chi_I = qchisq(0.025,n-1)
+inter_izq = sqrt(((n-1)*(sigma^2))/chi_D)
+inter_der = sqrt(((n-1)*(sigma^2))/chi_I)
+paste("Con un nivel de confianza del 95%, el verdadero valor poblacional de la desviación estándar se encuentra entre ", round(inter_izq,2), " y ", round(inter_der,2), sep="")
+```
+c. Compare. Si ambos son iguales cuál es mejor.
+
+```{r echo=FALSE}
+hist(ejercicio21, col = "lightblue", main = "Histograma ejercicio 21",
+     ylab = "Frecuencia", xlab = "Pesos de encuestados")
+```
+Ambos intervalos son bien similares, pero viendo el histograma de la muestra esta pareciera no provenir de una población distribuida normal, por lo que bootstrap es una mejor opción.
+
+
+
+
+
+
+
+
+
+
+

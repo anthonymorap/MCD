@@ -1,0 +1,282 @@
+---
+title: "Practica semana 5"
+author: "Anthony mora"
+date: "12/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Ejercicios parte A
+
+1. Identifique las hipótesis nula y alternativa que resultan de la afirmación de que la proporción de hombres es mayor que 0.5. Exprese las hipótesis en forma simbólica. 
+
+Hipotesis nula: La proporción de hombres es menor o igual a 0.5.
+
+$H_0: p \le 0.5$
+
+Hipotesis alternativa: La proporción de hombres es mayor a 0.5.
+
+$H_1: p > 0.5$
+
+
+2. Si una población tiene una distribución normal, ¿qué distribución se utiliza para someter a prueba la afirmación de que μ< 98.6, considerando una muestra de 25 valores con una media muestral de 98.2 y una desviación estándar muestral de 0.62? (normal, t, chi cuadrada, binomial, uniforme).
+
+Distribución t de student.
+
+3.	Si una población tiene una distribución normal, ¿qué distribución se utiliza para someter a prueba la afirmación de que una población tiene una desviación estándar igual a 0.75, considerando una muestra de 25 valores con una media muestral de 98.2 y una desviación estándar muestral de 0.62? (normal, t, chi cuadrada, binomial, uniforme). 
+
+Distribución chi-cuadrado.
+
+4.	Verdadero o falso: En la prueba de hipótesis, nunca es válido plantear una conclusión para sustentar la hipótesis nula. 
+
+Verdadero, la conclusión debe plantear el sustento de la hipótesis alternativa.
+
+5.	Calcule el valor P en una prueba de la afirmación de que una media poblacional es igual a 100, si el estadístico de prueba es z = 1.50. 
+
+```{r include=FALSE}
+p_value = round((2*pnorm(1.5, lower.tail = F))*100,2)
+```
+El p-value de esta prueba es de `r p_value`%, por lo que para un nivel de confianza del 95%, no tendríamos suficiente evidencia para rechazar la hipótesis nula.
+
+6.	Calcule el estadístico de prueba que se obtiene cuando se somete a prueba la afirmación de que p = 0.4, cuando los datos muestrales consisten en x = 30 éxitos en n = 100 ensayos. 
+
+```{r include=FALSE}
+p = 0.4
+prob_muestral = 0.3
+q = 1 - prob_muestral
+n = 100
+
+E = sqrt((prob_muestral*q)/n)
+z6 = round((prob_muestral - p)/E,2)
+pvalue = 2*pnorm(z6)
+
+```
+
+El estadístico de prueba será de `r z6`.
+
+7. Calcule el valor o valores críticos que se obtienen al utilizar un nivel de significancia de 0.05 para someter a prueba la afirmación de que μ = 100 cuando los datos muestrales consisten en = 90, s = 10 y n = 20. 
+
+
+```{r include=FALSE}
+s = 10
+mu = 100
+media = 90
+n = 20
+gl = n-1
+
+E = s/sqrt(n)
+z7 = round((media - mu)/E,2)
+
+t = round(qt(0.025,gl),2)
+
+pvalue= 2*(pnorm(4.47, lower.tail = F))
+```
+
+El estadístico de prueba será de `r z7` y el valor crítico será `r t`. Como el estadístico de prueba sale del área de no rechazo tenemos suficiente información para rechazar la hipótesis nula de  μ = 100.
+
+
+8.	Calcule el valor P que se obtiene cuando se somete a prueba la afirmación de que p = 0.75, cuando los datos muestrales dan como resultado un estadístico de prueba de z = 1.20.
+
+```{r include=FALSE}
+p_value = round((2*pnorm(1.2, lower.tail = F))*100,2)
+```
+
+El p-value de esta prueba es de `r p_value`%, por lo que para un nivel de confianza del 95%, no tendríamos suficiente evidencia para rechazar la hipótesis nula.
+
+9. ¿Cuál es la conclusión final que se obtiene cuando se somete a prueba la afirmación de que p > 0.25, si el valor P es 0.5555? 
+Tenemos evidencia suficiente para no rechazar la hipótesis nula, por lo que no podemos afirmar que p > 0.25.
+
+10.	Verdadero o falso: Si se utilizan los métodos correctos de prueba de hipótesis con una muestra aleatoria simple grande, la conclusión siempre será correcta.
+
+Falso, esto es evidente al analizar el concepto de nivel de confianza. Entendemos que tenemos NC% de probabilidad que los valores estimados sean los verdaderos valores poblacionales. 
+
+
+
+### Ejercicios parte B
+
+1.	Tasa de tabaquismo. Se obtiene una muestra aleatoria simple de 1088 adultos de entre 18 y 44 años de edad, y se descubre que 261 de ellos fuman (según datos de la National Health Interview Survey). Utilice un nivel de significancia de 0.05 para someter a prueba la afirmación de que menos de 1/4 de los adultos fuman. 
+
+
+```{r include=FALSE}
+n = 1088
+prob_muestral = 261/n
+p = 1/4
+q = 1-prob_muestral
+
+E = sqrt((prob_muestral*q)/n)
+z_t = round((prob_muestral-p)/E,2)
+z_c = round(qnorm(0.05),2)
+
+prop.test(prob_muestral,n,p,alternative = "less")
+
+pvalue = pnorm(z_t)
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que menos de 1/4 de los adultos fuman.
+
+
+2.	Tasa de graduados. Se obtiene una muestra aleatoria simple de 1486 estudiantes universitarios que quieren obtener un título de licenciatura; la muestra incluye a 802 que obtienen el título de licenciatura en un periodo de cinco años. Utilice un nivel de significancia de 0.01 para someter a prueba la afirmación de que la mayoría de los estudiantes universitarios obtienen su título de licenciatura en un plazo de cinco años. 
+
+
+```{r include=FALSE}
+n = 1486
+prob_muestral = 802/n
+ns = 0.01
+p = 0.50
+q = 1-prob_muestral
+
+E = sqrt((prob_muestral*q)/n)
+z_t = round((prob_muestral-p)/E,2)
+z_c = round(qnorm(ns, lower.tail = F),2)
+
+pvalue = pnorm(z_t, lower.tail = F)
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis alternativa. Debido a esto pudieramos afirmar que la mayoría de los estudiantes universitarios obtienen su título de licenciatura en un plazo de cinco años.
+
+
+3.	Pesos de automóviles. Al planear la construcción de una calzada, los ingenieros deben tomar en cuenta los pesos de los automóviles, para asegurarse de que la superficie sea lo suficientemente fuerte. Una muestra aleatoria simple de 32 automóviles produce una media de 3605.3 libras y una desviación estándar de 501.7 libras (de acuerdo con el conjunto de datos 16 del apéndice B). Utilice un nivel de significancia de 0.01 para someter a prueba la afirmación de que el peso medio de los automóviles es menor que 3700 libras. Al considerar los pesos de automóviles para la construcción de un camino que sea lo suficientemente fuerte, ¿el estadístico más relevante es la media? Si no es así, ¿qué peso es el más relevante? 
+
+
+```{r include=FALSE}
+n = 32
+media = 3605.3
+mu = 3700
+s = 501.7
+ns = 0.01
+gl = n - 1
+
+E = s/sqrt(n)
+z_t = round((media-mu)/E,2)
+z_c = round(qt(ns,gl, lower.tail = T),2)
+
+pvalue = pt(z_t,gl, lower.tail = T)
+
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que el peso medio de los automóviles es menor que 3700 libras.
+
+
+4.	Pesos de automóviles. Repita el ejercicio 3, suponiendo que los pesos de los automóviles tienen una desviación estándar conocida de 520 libras. 
+
+```{r include=FALSE}
+n = 32
+media = 3605.3
+mu = 3700
+s = 502
+ns = 0.01
+
+E = s/sqrt(n)
+z_t = round((media-mu)/E,2)
+z_c = round(qnorm(ns, lower.tail = T),2)
+
+pvalue = pnorm(z_t, lower.tail = T)
+
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que el peso medio de los automóviles es menor que 3700 libras.
+
+
+5.	Consumo de hierbas De 30,617 adultos elegidos al azar, 5787 consumieron hierbas durante los últimos 12 meses (según datos de “Use of Herbs Among Adults Based on Evidence-Based Indications: Findings From the National Health Survey”, de Bardia, et al., Mayo Clinic Proceedings, vol. 82, núm. 5). Utilice un nivel de significancia de 0.01 para someter a prueba la afirmación de que menos del 20% de los adultos consumieron hierbas durante los últimos 12 meses.
+
+```{r include=FALSE}
+n = 30617
+prob_muestral = 5787/n
+p = 0.2
+q = 1-prob_muestral
+ns = 0.01
+
+E = sqrt((prob_muestral*q)/n)
+z_t = round((prob_muestral-p)/E,2)
+z_c = round(qnorm(ns, lower.tail = T),2)
+
+pvalue = pnorm(z_t, lower.tail = T)
+
+```
+
+Como nuestro estadístico de prueba `r z_t` es menor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis alternativa. Debido a esto podemos afirmar que menos del 20% de los adultos consumieron hierbas durante los últimos 12 meses.
+
+6.	Generación aleatoria de datos. La calculadora TI-83/84 Plus puede generar datos aleatorios a partir de una población distribuida normalmente. El comando randNorm(74, 12.5, 100) genera 100 valores de una población distribuida normalmente, con μ = 74 y σ = 12.5 (para los pulsos de mujeres). Una muestra de 100 valores generada de esta forma tiene una media de 74.4 y una desviación estándar de 11.7. Suponga que se sabe que σ es igual a 12.5 y utilice un nivel de significancia de 0.05 para someter a prueba la afirmación de que la muestra en realidad proviene de una población con una media igual a 74. Con base en los resultados, ¿parecería que el generador de números aleatorios de la calculadora funciona correctamente? 
+
+
+```{r include=FALSE}
+mu = 74
+sigma = 12.5
+media = 74.4
+s = 11.7
+n = 100
+ns = 0.05
+
+E = sigma/sqrt(n)
+z_t = round((media-mu)/E,2)
+z_c = round(qnorm(ns/2, lower.tail = T),2)
+
+pvalue = 2*pnorm(z_t, lower.tail = F)
+
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que la media poblacional es distinta de 74.
+
+
+
+7.	Generación aleatoria de datos. Repita el ejercicio 6, sin suponer que se conoce la desviación estándar poblacional. 
+
+```{r include=FALSE}
+mu = 74
+sigma = 12.5
+media = 74.4
+s = 11.7
+n = 100
+ns = 0.05
+
+E = s/sqrt(n)
+z_t = round((media-mu)/E,2)
+z_c = round(qnorm(ns/2, lower.tail = T),2)
+
+```
+
+Como nuestro estadístico de prueba `r z_t` es mayor que el valor crítico de  `r z_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que la media poblacional es distinta de 74.
+
+
+8.	Generación aleatoria de datos. Utilice los resultados muestrales del ejercicio 6 para someter a prueba la afirmación de que los valores generados provienen de una población con una desviación estándar igual a 12.5. Utilice un nivel de significancia de 0.05. 
+
+```{r include=FALSE}
+mu = 74
+sigma = 12.5
+media = 74.4
+s = 11.7
+n = 100
+ns = 0.05
+gl = n-1
+
+E = s/sqrt(n)
+z_t = round((media-mu)/E,2)
+z_c = round(qnorm(ns/2, lower.tail = T),2)
+
+chi_t = (gl*s^2)/sigma^2
+chi_c = qchisq(ns/2,gl)
+
+
+```
+
+
+
+Como nuestro estadístico de prueba `r chi_t` es mayor que el valor crítico de  `r chi_c`, tenemos evidencia suficiente para no rechazar la hipótesis nula. Debido a esto no podemos afirmar que la desviación estándar poblacional es distinta de 12.5.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

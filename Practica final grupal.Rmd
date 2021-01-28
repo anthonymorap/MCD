@@ -1,0 +1,132 @@
+---
+title: "Cadenas de Markov"
+author: "Anthony Mora"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: zenburn
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(markovchain)
+library(diagram)
+```
+
+
+## Ejercicio 2-2
+
+Suponga que la probabilidad de lluvia mañana es de 0.5 si hoy llueve y que la probabilidad de un día claro (sin lluvia) mañana
+es de 0.9 si hoy está despejado. Suponga además que estas probabilidades no cambian si también se proporciona información sobre el clima de días anteriores a hoy.
+
+a. Explique por qué los supuestos establecidos implican que la propiedad markoviana se cumple en el caso de la evolución del clima.
+
+El evento de clima futuro solo depende del clima del día presente y no del clima de días pasados a hoy, por lo que se cumple la propiedad markoviana. Entonces se confirma que la evolución del clima es una cadena de Markov.
+
+$$P(Clima_{t+1}=j|Clima_{0},Clima_{1},Clima_{2},...,Clima_{t})=P(Clima_{t+1}=j|Clima_{t})$$
+
+b. Formule la evolución del clima como una cadena de Markov mediante la defi nición de sus estados y la construcción de su matriz de transición (de un paso).
+
+```{r fig.height=7.5, fig.width=5}
+clima = c("Día lluvioso","Día seco") # Nombres de los estados
+transMatr<-matrix(c(0.5,0.5,0.1,0.9),nrow=2,byrow=T, dimnames = list(clima,clima)) # Matriz de transicion
+simpleMc<-new("markovchain", states=c("Día lluvioso","Día seco"), # Cadena de Markov
+              transitionMatrix=transMatr, 
+              name="simpleMc")
+simpleMc
+plotmat(t(transMatr), main = "Diagrama de transición", box.size = 0.15, box.col = "light yellow", pos = c(1, 1)) # Diagrama de transicion
+```
+
+
+
+## Ejercicio 3-1
+
+Reconsidere el problema 16.2-2.
+
+a. Utilice la rutina de las ecuaciones de Chapman-Kolmogorov del IOR Tutorial para encontrar la matriz de transición de n pasos P(n) para n 2, 5, 10, 20.
+
+
+```{r}
+simpleMc^2
+simpleMc^5
+simpleMc^10
+simpleMc^20
+
+```
+LLegando a el paso 10 el estado del clima deja de depender del clima de 10 días antes.
+
+
+b. La probabilidad de que llueva hoy es de 0.5. Use los resultados del inciso a) para determinar la probabilidad de que llueva dentro de n días, para n 2, 5, 10, 20.
+
+```{r}
+v <- c(0.5,0.5) # Probabilidad de que llueva es 0.5
+# Multiplicamos el vector de probabilidades por la matriz de transicion
+round(v*simpleMc^2,2)
+round(v*simpleMc^5,2)
+round(v*simpleMc^10,2)
+round(v*simpleMc^20,2)
+
+```
+
+
+c.Utilice la rutina de probabilidades de estado estable del IOR Tutorial para determinar las probabilidades de estado estable del clima. Compare las probabilidades de las matrices de transición de n pasos del inciso a) compare estas probabilidades de estado estable conforme n crece.
+
+```{r}
+#Uso de funcion para calcular el estado estable del sistema
+st_st <- round(steadyStates(simpleMc),2)
+st_st
+```
+Al llegar al steady state la probabilidad de que el día siguiente sea lluvioso es de 17%, mientras que hay un 83% de que sea un día despejado.
+
+
+## Ejercicio 3-2
+
+Suponga que una red de comunicaciones transmite dígitos binarios, 0 o 1, y que cada dígito se transmite 10 veces sucesivas. Durante cada transmisión, la probabilidad de que ese dígito se transmita correctamente es de 0.995. En otras palabras, existe una probabilidad de 0.005 de que el dígito transmitido se registre con el valor opuesto al fi nal de la transmisión. Para cada transmisión después de la primera, el dígito transmitido es el que se registra al fi nal de la transmisión anterior. Si X0 denota el dígito binario que entra al sistema, X1 el dígito binario que se apunta después de la primera transmisión, X2 el dígito binario que se anota después de la segunda transmisión, . . ., entonces {Xn} es una cadena de Markov.
+
+a. Determine la matriz de transición (de un paso).
+
+```{r fig.height=7.5, fig.width=5}
+est = c("Dígito correcto","Dígito incorrecto") # Nombres de los estados
+transMatr<-matrix(c(0.995,0.005,0.005,0.995),nrow=2,byrow=T, dimnames = list(est,est)) # Matriz de transicion
+simpleMc<-new("markovchain", states=est, # Cadena de Markov
+              transitionMatrix=transMatr, 
+              name="simpleMc")
+simpleMc
+plotmat(t(transMatr), main = "Diagrama de transición", box.size = 0.17, box.col = "light yellow", pos = c(1, 1)) # Diagrama de transicion
+```
+
+
+b. Utilice el IOR Tutorial para encontrar la matriz de transición de 10 pasos P(10). Utilice este resultado para identificar la probabilidad de que un dígito que entra a la red se registre correctamente después de la última transmisión.
+
+```{r}
+simpleMc^10
+```
+La probabilidad de que un dígito entre a la red y sea transmitido 10 veces seguidas es de 95.2%
+
+c. Suponga que la red se rediseña para mejorar la probabilidad de la exactitud de una sola transmisión de 0.995 a 0.998. Repita el inciso b) para encontrar la nueva probabilidad de que un dígito que entra a la red se registre correctamente después de la última transmisión. 
+
+```{r fig.height=7.5, fig.width=5}
+est = c("Dígito correcto","Dígito incorrecto") # Nombres de los estados
+transMatr<-matrix(c(0.998,0.002,0.002,0.998),nrow=2,byrow=T, dimnames = list(est,est)) # Matriz de transicion
+simpleMc<-new("markovchain", states=est, # Cadena de Markov
+              transitionMatrix=transMatr, 
+              name="simpleMc")
+simpleMc
+plotmat(t(transMatr), main = "Diagrama de transición", box.size = 0.17, box.col = "light yellow", pos = c(1, 1)) # Diagrama de transicion
+```
+
+```{r}
+simpleMc^10
+```
+Luego de mejorar la exactitud de una sola transmisión de 0.995 a 0.998, la probabilidad de que un dígito entre a la red y se registre correctamente es de 98%.
+
+
+

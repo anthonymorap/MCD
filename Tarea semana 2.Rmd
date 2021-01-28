@@ -1,0 +1,245 @@
+---
+title: "Tarea semana 2"
+author: "Anthony mora"
+date: "11/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include=FALSE}
+library(scales)
+```
+
+# Ejercicios 10-12 pags 320-321
+
+10. Se obtiene un número grande de muestras aleatorias simples de tamaño $n=85$ a partir de una población grande de pesos al nacer, con una media de 3420 g y una desviación estándar de 495 g. Se calcula la media muestral $\bar x$ de cada muestra.
+
+a. ¿Cuál es la forma aproximada de la distribución de las medias muestrales?
+
+La distribución de las medias muestrales es aproximadamente normal.
+
+b. ¿Cuál es la media esperada de las medias muestrales?
+
+La media esperada de las medias muestrales es igual a la media poblacional, por lo que 3420g será la media esperada.
+
+$\mu_{\stackrel{-}{x}} = \mu$
+
+c. ¿Cuál es la desviación estándar esperada de las medias muestrales?
+
+La desviación estándar de las medias muestrales es el error estándar de la media, en este caso sería 53.7g.
+
+$\sigma_{\bar x}=\dfrac{\sigma}{\sqrt{n}}$
+
+
+
+11. Según las reglas de la Federal Aviation Administration, las aerolíneas deben estimar el peso de un pasajero en 185 libras. (Esta cantidad es para un
+adulto que viaja en invierno, e incluye 20 libras de equipaje de mano). Las reglas actuales exigen
+una estimación de 195 libras. El peso de los hombres se distribuye normalmente, con una media
+de 172 libras y una desviación estándar de 29 libras.
+
+a. Si se selecciona 1 hombre al azar, y se supone que lleva un equipaje de mano de 20 libras, calcule la probabilidad de que su peso total sea mayor que 195 libras.
+
+Primero debemos tomar en cuenta que el promedio de un pasajero será igual al promedio del peso de los hombres, es decir 172 libras, más el peso de su equipaje de mano de 20 libras. Por lo que el peso promedio de un pasajero será 192 libras.
+
+$\mu=192$
+
+$\sigma=29$
+
+
+```{r , echo=FALSE}
+p11a = pnorm(195, mean = 192, sd = 29, lower.tail = F)
+paste("La probabilidad de un pasajero con más de 195 libras es de ",
+      round(p11a*100, 2), "%", sep = "")
+```
+b. Si un avión Boeing 767-300 transporta a 213 pasajeros adultos varones, y se supone que cada uno lleva equipaje de mano con un peso de 20 libras, calcule la probabilidad de que el peso medio de los pasajeros (incluyendo su equipaje de mano) sea mayor que 195 libras. Con base en esa probabilidad, ¿el piloto debe preocuparse por exceder este límite de peso?
+
+$n=213$
+
+```{r , echo=FALSE}
+error_estandar = 29/sqrt(213)
+p11b = pnorm(195, mean = 192, sd = error_estandar, lower.tail = F) 
+paste("El piloto debe preocuparse ya que la probabilidad de excederse del peso permitido es de ", round(p11b*100, 2), "%.", " Esto implica que de cada 15 viajes 1 pudiera presentar sobrepeso", sep = "")
+```
+12. A continuación se presentan los pesos (en gramos) de una muestra
+aleatoria simple de monedas estadounidenses de un dólar (del conjunto de datos 20 del apéndice B).
+
+```{r echo=FALSE, paged.print=TRUE}
+datos12 = c(8.1008, 8.1072, 8.0271,  8.0813, 8.0241, 8.0510, 7.9817, 8.0954, 8.0658,
+            8.1238, 8.1281, 8.0307,  8.0719, 8.0345, 8.0775, 8.1384, 8.1041, 8.0894,
+            8.0538, 8.0342)
+print(datos12)
+```
+
+¿Parece que estos pesos provienen de una población distribuida de manera normal? ¿Por qué?
+
+```{r fig.height=8, fig.width=15, fig.align="center", echo=FALSE}
+par(mfrow = c(1,2))
+hist(datos12, breaks = 15, col = "#ff9c1d", main = "Histograma ejercicio 12", xlab = "", ylab = "Frecuencia")
+qqnorm(datos12, xlab = "Cuantiles teóricos", ylab = "Cuantiles de la muestra", main = "Q-Q plot ejercicio 12", pch = 1)
+qqline(datos12, col = "red", lwd  = 2)
+```
+
+Analizando los datos gráficamente podemos ver un histograma con una distribución posiblemente normal. Además, el Q-Q plot tambien muestra una distribución parecida a la normal.
+
+
+
+
+# Ejercicios 1-5 pag 321-322
+
+1. A continuación se presentan los salarios anuales (en miles de dólares) de una muestra aleatoria simple de entrenadores de futbol de la división 1-A de la NCAA
+(según datos del New York Times).
+
+```{r echo=FALSE, paged.print=TRUE}
+datos1 = c(235, 159, 492, 530, 138, 125, 128, 900, 360, 212)
+datos1_dol = datos1 * 1000
+print(datos1)
+```
+
+a. Calcule la media y exprese el resultado en dólares y no en miles de dólares.
+
+```{r echo=FALSE}
+media1 = mean(datos1_dol)
+paste("La media de los salarios anuales de la muestra de entrenadores es de ", dollar(media1), " dólares.", sep = "")
+```
+b. Calcule la mediana y exprese el resultado en dólares y no en miles de dólares.
+
+```{r echo=FALSE}
+mediana1 = median(datos1_dol)
+paste("La mediana de los salarios anuales de la muestra de entrenadores es de ", dollar(mediana1), " dólares.", sep = "")
+```
+
+c. Calcule la desviación estándar s y exprese los resultados en dólares y no en miles de dólares.
+
+```{r echo=FALSE}
+desv1 = sd(datos1_dol)
+paste("La desviación estándar de los salarios anuales de la muestra de entrenadores es de ", dollar(desv1), " dólares.", sep = "")
+```
+
+d. Calcule la varianza y exprese el resultado en las unidades adecuadas.
+
+```{r echo=FALSE}
+var1 = var(datos1_dol)
+paste("La varianza de los salarios anuales de la muestra de entrenadores es de ", number(var1, big.mark = ","), ". Se expresarían en dólares cuadrados, pero esto no hace mucho sentido.", sep = "")
+```
+
+e. Transforme el primer salario de $235,000 en una puntuación z.
+
+```{r echo=FALSE}
+z1e = (235000-media1)/desv1
+paste("El valor z de $235,000 es", round(z1e, 2))
+```
+
+f.  ¿Qué nivel de medición (nominal, ordinal, de intervalo, de razón) tiene este conjunto de datos?
+
+Razón
+
+g.  ¿Los salarios son datos discretos o continuos?
+
+Discretos
+
+
+2. Muestreo
+
+a. ¿Qué es una muestra aleatoria simple?
+
+Es un subconjunto de una población, donde cada observación o individuo tiene la misma probabilidad de ser seleccionado para ser parte de la muestra. Cualquier muestra del mismo tamaño elegida de esta forma tiene la misma probabilidad de ser muestreada.
+
+b. ¿Qué es una muestra de respuesta voluntaria y por qué no suele ser adecuada para fines estadísticos?
+
+Es aquella que se obtiene de forma que los participantes deciden si se incluyen o no en la muestra. Los participantes más interesados en el tema serán más proclives a responder, de manera que la muestra estará sesgada y no es representativa de la población.
+
+3. En un ensayo clínico del fármaco Nasonex, para las alergias, se
+trataron 2103 pacientes adultos con este medicamento y 14 de ellos desarrollaron infecciones virales.
+
+```{r echo=FALSE}
+n = 2103
+infectados = 14
+p = infectados/n
+```
+
+
+a. Si dos adultos diferentes se seleccionan al azar del grupo de tratamiento, ¿cuál es la probabilidad de que ambos desarrollen infecciones virales?
+
+```{r echo = FALSE}
+p3a = (infectados/n)*((infectados-1)/(n-1))
+paste("La probabilidad será de ", round(p3a*100,5),"%", sep="")
+```
+
+b. Suponiendo que la misma proporción de infecciones virales se aplica a todos los adultos que utilizan Nasonex, calcule la probabilidad de que, de un total de 5000 adultos tratados con Nasonex seleccionados al azar, al menos 40 desarrollen infecciones virales.
+
+
+```{r echo = FALSE}
+n = 5000
+q = 1-p
+media3b = n*p
+desv3b = sqrt(n*p*q)
+p3b = pnorm(39.5, mean = media3b, sd = desv3b, lower.tail = F) 
+paste("La probabilidad de que al menos 40 desarrollen infecciones en una muestra de 5,000 pacientes es de ", round(p3b*100,2),"%", sep = "")
+```
+
+c. Con base en el resultado del inciso b), ¿40 es un número inusualmente alto de infecciones virales? ¿Por qué?
+
+Una probabilidad de 13.99% no es tan baja como para suponer que es un número inusual, si la probabilidad hubiera sido de menos de 5% si se pudiera considerar poco usual.
+
+
+d. ¿Los resultados (14 infecciones virales entre 2103 usuarios adultos de Nasonex) sugieren que las infecciones virales son una reacción adversa al fármaco Nasonex? ¿Por qué?
+
+No, porque no se nos proporciona información sobre un grupo control con el cuál comparar pacientes que no utilizaron el fármaco vs los que si lo utilizaron. Si se realizo un experimento aleatorio tendríamos esta información y pudieramos responder una pregunta de causalidad como esta.
+
+
+4. La siguiente gráfica describe el consumo de combustible (en millas por galón) en carretera de tres automóviles. ¿La gráfica describe los datos adecuadamente, o los distorsiona de alguna forma? Explique.
+
+
+
+5. Según datos de la American Medical Association, el 10% de las personas son zurdas.
+
+a. Si se seleccionan tres personas al azar, calcule la probabilidad de que todas sean zurdas.
+
+```{r echo=FALSE}
+p5=0.1
+p5a = p5*p5*p5
+paste("La probabilidad de que las tres personas sean zurdas es de ", p5a*100, "%", sep="")
+```
+
+b.  Si se seleccionan tres personas al azar, calcule la probabilidad de que al menos una de ellas sea zurda
+```{r echo=FALSE}
+p5b = 1-(1-p5)^3
+paste("La probabilidad de que de 3 personas al menos una persona sea zurda es de ", p5b*100, "%", sep="")
+```
+c. ¿Por qué no podemos resolver el problema del inciso b) con una distribución normal como
+aproximación de la distribución binomial?
+
+Porque $n*p \ge 5$ no se satisface para el inciso b. donde $n*p = 0.3$. Por lo que una aproximación con la distribución normal produciría errores.
+
+d. Si se seleccionan al azar grupos de 50 personas, ¿cuál sería el número medio de individuos zurdos en estos grupos?
+
+```{r echo=FALSE}
+n = 50
+media5d = p5 * n
+paste("El número medio de zurdos por grupo sería de ", media5d, " personas", sep="")
+```
+
+e. Si se seleccionan al azar grupos de 50 personas, ¿cuál sería la desviación estándar del número de personas zurdas en estos grupos?
+
+```{r echo=FALSE}
+n = 50
+desv5d = sqrt(p5*(1-p5)*n)
+paste("La desviación estándar de zurdos por grupo sería de ", round(desv5d, 2), " personas", sep="")
+```
+f. ¿Sería inusual encontrar a 8 sujetos zurdos en un grupo de 50 personas seleccionadas al azar? ¿Por qué?
+
+No, porque 8 personas es un número que se encuentra cerca de 2 desviaciones de la media.
+
+
+
+
+
+
+
+
+
+

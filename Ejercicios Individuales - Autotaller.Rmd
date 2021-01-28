@@ -1,0 +1,310 @@
+---
+title: "Ejercicios individuales - Autotaller"
+author: "Anthony mora"
+date: "11/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Unidad 2: Generación de números aleatorios y simulación del comportamiento muestral de estadísticos.
+
+## Sección 2.1: Simulación de experimentos aleatorios.
+
+1. Simule 10 lanzamientos de un dado.
+
+```{r}
+sample(1:6, 10, replace = TRUE)
+```
+
+2. Simule 20 lanzamientos de un dado trucado donde el número 1 tiene el triple de posibilidades de salir que el resto de valores, que son equiprobables.
+
+```{r}
+# Creamos vector con las probabilidades de cada resultado del dado
+c(3/8, 1/8, 1/8, 1/8, 1/8, 1/8)
+# Repetimos la probabilidad 1/8, 5 veces
+c(3/8, rep(1/8, 5))
+sample(1:6, 20, replace = TRUE, prob = c(3/8, rep(1/8, 5)))
+```
+
+3. Se dispone de una urna con 12 bolas negras, 5 bolas rojas y 3 blancas. Extraiga tres bolas de esta urna sin reemplazamiento.
+
+```{r}
+# Vector que describe la urna
+x <- c(rep("negra", 12), rep("roja", 5), rep("blanca", 3))
+sample(x, 3)
+sample(c("negra", "roja", "blanca"), 3, prob = c(12/20, 5/20, 3/20))
+```
+
+
+4. Una multinacional dedicada al transporte de mercancías sabe que, durante el último año, el 60% de sus trabajadores no ha faltado ni un solo día al trabajo, el 25% ha faltado un día, el 10% dos días y el 5% cuatro días. Si seleccionamos aleatoriamente a 50 de sus 1500 trabajadores y recogemos la información sobre el número de días que han faltado al trabajo durante el último año, determine qué porcentaje de estos 50 trabajadores ha faltado sólo un día al trabajo.
+
+```{r}
+x <-c(rep(0, 0.6*1500), rep(1, 0.25*1500), rep(2, 0.10*1500), rep(4, 0.05*1500))
+muestra <- sample(x, 50)
+table(muestra) / length(muestra)
+```
+
+## Sección 2.2: Generación de números aleatorios.
+
+5. Genere una muestra aleatoria simple de tamaño 100 de una variable X uniforme (1,3) y calcule el valor del estadístico media muestral sobre la muestra generada. Repite este proceso 4 veces. ¿Toma la media muestral siempre el mismo valor? ¿Por qué?
+
+Compare los resultados con los obtenidos en el caso de muestras de tamaño 1000.
+
+```{r}
+muestra1 <- runif(100, 1, 3) 
+muestra1[1:14]     # Muestra los primeros 14 números del vector muestra1
+mean(muestra1)     # media muestral de muestra1
+muestra2 <- runif(100, 1, 3) 
+mean(muestra2) 
+muestra3 <- runif(100, 1, 3) 
+mean(muestra3) 
+muestra4 <- runif(100, 1, 3) 
+mean(muestra4)
+(1 + 3) / 2
+mean(runif(1000, 1, 3))
+mean(runif(1000, 1, 3))
+mean(runif(1000, 1, 3))
+mean(runif(1000, 1, 3))
+```
+
+6. Genere dos muestras de una población binomial de parámetros n = 6, p = 0.2, una de tamaño 30 y otra de tamaño 80, utilizando la semilla 1587. Conteste a las siguientes cuestiones:
+
+```{r}
+n = 6
+p = 0.2
+set.seed(1587) 
+MuestraBinomial30 <- rbinom(30, 6, 0.2) 
+set.seed(1587)
+MuestraBinomial80 <- rbinom(80, 6, 0.2) 
+```
+
+a. ¿Qué valores toman la media, la desviación típica y la varianza poblacionales?
+
+```{r}
+(media=n*p)
+(varianza=media*(1-p))
+(desviacion=sqrt(varianza))
+```
+
+
+b. Obtenga para cada muestra el valor de los siguientes estadísticos: media muestral, varianza muestral, cuasivarianza muestral, desviación típica muestral y cuasidesviación típica muestral.
+
+```{r}
+(media30=mean(MuestraBinomial30) )
+var(MuestraBinomial30)
+sd(MuestraBinomial30) 
+# Varianza muestral
+(varianza30 = var(MuestraBinomial30) * (30 - 1) / 30) 
+# Desviacion tipica muestral
+(desviacion30 = sqrt(var(MuestraBinomial30) * (30 - 1) / 30)) 
+```
+
+```{r}
+(media80 = mean(MuestraBinomial80))
+var(MuestraBinomial80)
+sd(MuestraBinomial80)
+# Varianza muestral
+(varianza80 = var(MuestraBinomial80) * (80 - 1) / 80 )
+# Desviacion tipica muestral
+(desviacion80 = sqrt(var(MuestraBinomial80) * (80 - 1) / 80)) 
+```
+
+
+c. Compare los resultados muestrales con los poblacionales.
+
+```{r}
+dimensiones = list(c("Media", "Varianza", "Desviacion Tipica"),
+                   c("Poblacional", "Muestra tamaño 30", "Muestra tamaño 80"))
+matrix(c(media, varianza, desviacion,
+         media30, varianza30, desviacion30,
+         media80, varianza80, desviacion80),
+       nrow = 3, ncol = 3,
+       dimnames = dimensiones)
+```
+
+## Sección 2.3: Comportamiento muestral de los estadisticos.
+
+7. Genere 200 muestras de tamaño 10 para una población normal de media 6 y desviación típica 2, con una semilla igual a 325. Calcule la media muestral de cada muestra y conteste a las siguientes cuestiones:
+
+```{r}
+set.seed(325)
+data <- rnorm(200 * 10, mean = 6, sd = 2) 
+MuestrasNormales <- matrix(data, nrow = 200, ncol = 10) 
+head(MuestrasNormales, 3)
+```
+
+```{r}
+rownames(MuestrasNormales) <- paste("muestra", 1:200, sep = "") 
+colnames(MuestrasNormales) <- paste("obs", 1:10, sep = "")   
+head(MuestrasNormales, 3)
+rownames(MuestrasNormales) <- paste0("muestra", 1:200) 
+colnames(MuestrasNormales) <- paste0("obs", 1:10)   
+head(MuestrasNormales, 3)
+```
+```{r}
+vector_medias <- apply(MuestrasNormales, 1, mean) 
+vector_medias[1:6]      # primeras seis medias muestrales
+```
+
+
+
+a. ¿Cuál es el valor de la media muestral de la sexta muestra que ha generado?
+
+```{r}
+MuestrasNormales[6, ] 
+mean(MuestrasNormales[6, ])
+vector_medias[6]
+```
+
+
+b. Represente las 200 medias muestrales generadas mediante un histograma.
+```{r}
+hist(vector_medias, col = "lightblue")
+```
+
+
+c. ¿Qué distribución sigue teóricamente la media muestral en este problema?
+
+Como la población es normal $N(\mu, \sigma)$, la media muestral sigue una distribución normal de media $\mu$ y desviación típica $\dfrac{\sigma}{\sqrt{n}}$, que en este caso concreto toma los valores 6 y 0.6324555 ( = 2 / sqrt(10) ), respectivamente.
+
+```{r}
+2/sqrt(10)
+```
+
+
+d. ¿Cuál es la media muestral de las observaciones obtenidas para el estadístico media muestral?
+
+```{r}
+mean(vector_medias)
+```
+
+
+e. ¿Cuál es la cuasidesviación típica muestral de las observaciones obtenidas para el estadístico media muestral?
+
+```{r}
+sd(vector_medias)
+```
+
+
+f. Comente conjuntamente las tres últimas cuestiones.
+
+Los valores numéricos obtenidos para la media muestral (cuestión d) y para la cuasidesviación típica muestral (cuestión e) utilizando la información del objeto $vector_medias$ son estimaciones de la media ($\mu$) y de la desviación típica ($\dfrac{\sigma}{\sqrt{n}}$) de la distribución normal del estadístico $\bar{X}$.
+
+g. Dibuje la distribución teórica del estadístico media muestral sobre el histograma obtenido para las 200 medias muestrales anteriores. Comente el gráfico.
+
+```{r}
+hist(vector_medias, freq = FALSE, col = "lightblue", xlim = c(4, 8))  
+curve(dnorm(x, 6, 2/sqrt(10)), add = TRUE, col = "blue")  
+```
+
+
+
+8. Genere 150 muestras de tamaño 8 para una población normal de media 5 y desviación típica 2.5, con una semilla igual a 5238. Calcule el valor del estadístico (n−1)S2c/σ2 para cada muestra y conteste a las siguientes preguntas:
+
+```{r}
+set.seed(5238)
+data <- rnorm(150 * 8, mean = 5, sd = 2.5) 
+Muestras <- matrix(data, nrow = 150, ncol = 8)
+rownames(Muestras) <- paste0("muestra", 1:150)     # opcional 
+colnames(Muestras) <- paste0("obs", 1:8)     # opcional
+head(Muestras, 3) 
+```
+
+```{r}
+cuasivarianza_muestral <- apply(Muestras, 1, var) 
+cuasivarianza_muestral[1:6]    # primeras seis cuasivarianzas muestrales
+estadistico <- (8 - 1) * cuasivarianza_muestral / 2.5^2 
+estadistico[1:6]     # primeros seis valores del estadístico
+```
+
+
+
+¿Cuál es el valor del estadístico (n−1)S2c/σ2 para la octava muestra que ha generado?
+
+```{r}
+estadistico[8]
+```
+
+
+Represente los 150 valores generados del estadístico (n−1)S2c/σ2 mediante un histograma.
+
+```{r}
+hist(estadistico, col = "lightgreen")
+```
+
+
+¿Qué distribución sigue teóricamente el estadístico (n−1)S2c/σ2 de este problema?
+
+Al ser una población normal, por el lema de Fisher-Cochran sabemos que este estadístico sigue una distribución chi-cuadrado de 7 ( = tamaño de la muestra − 1 ) grados de libertad.
+
+¿Cuál es la media poblacional del estadístico (n−1)S2c/σ2?
+
+Como este estadístico sigue una distribución chi-cuadrado, la media poblacional coincide con los grados de libertad, es decir, 7.
+
+¿Cuál es la media muestral de las observaciones de (n−1)S2c/σ2?
+
+```{r}
+mean(estadistico)
+```
+
+
+¿Cuál es la varianza poblacional de (n−1)S2c/σ2?
+
+La varianza poblacional es el doble de los grados de libertad, es decir, 14.
+
+
+¿Cuál es la varianza muestral de las observaciones de (n−1)S2c/σ2?
+```{r}
+(150 - 1) * var(estadistico) / 150 
+```
+
+
+Comente conjuntamente las cuatro últimas preguntas.
+
+Los valores numéricos obtenidos para la media (cuestión e) y varianza (cuestión g) muestrales a partir de la información contenida en el objeto estadistico son estimaciones de la media (n) y la varianza (2n) de la distribución teórica del estadístico (n−1)S2c/σ2.
+
+Dibuje la distribución teórica del estadístico (n−1)S2c/σ2 sobre el histograma. Comente el gráfico.
+
+```{r}
+hist(estadistico, freq = FALSE, col = "lightgreen")
+curve(dchisq(x, 7), add = TRUE, col = "darkgreen") 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,176 @@
+---
+title: "Tarea 1era Semana"
+Author: "Anthony Mora"
+output: html_document
+---
+
+Utilizaremos un dataset que incluye diferentes hamburguesas de Mcdonald's con sus respectivas medidas de grasa.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, include=FALSE}
+library(tidyverse)
+library(wesanderson)
+library(lattice)
+library(summarytools)
+library(openintro)
+```
+
+```{r echo=FALSE, message=FALSE}
+df = read_csv("C:/Users/antho/Desktop/Trimestre/Analisis estadistico/R/Data/mcdonald_sandwich.csv")
+head(df)
+```
+
+#### Diagrama de puntos
+
+Son útiles para mostrar datos cuantitativos de una forma organizada, que permite identificar con facilidad dos características:
+
+1. La localización de los datos
+2. La dispersión o variabilidad de los datos
+
+Muestra cada uno de los elementos de un conjunto de datos por encima de una recta numérica (eje horizontal).
+
+```{r , fig.align="center", echo=FALSE, message=FALSE}
+
+df %>%
+  mutate(Id = c(1:dim(df)[1])) %>%
+  ggplot(aes(as.factor(Fat)))+
+  geom_dotplot(fill = "#D6604D")+
+  labs(x="Fat",
+      y="",
+      title = "Gráfico de puntos")+
+  ylim("")+
+  theme(axis.ticks = element_blank())
+
+#dotPlot(df$Fat, col="#D6604D", xlim=c(0,40), cex = 4, ylab="", xlab="Fat")
+#dotPlotStack(df$Fat, col="#D6604D", xlim=c(0,40))
+#dotchart(df$Fat)
+
+#boxPlot(df$Fat)
+
+```
+El gráfico de puntos nos permite ver como estan distribuidas nuestras observaciones y la disperción de la variable correspondiente.
+Podemos identificar que hay dos hamburguers con 26g y 29g de grasa.
+
+
+#### Boxplot - Diagrama de caja
+
+Es un método grafico para analizar datos por medio de los quartiles. Este sirve como buena herramienta para análisis de outliers.
+
+```{r descr, echo=F, fig.align='center', message=FALSE, warning=FALSE}
+descr(as.list(df),
+      stats = "fivenum",
+      headings = F)
+```
+
+
+
+```{r ggplot2, fig.align="center", echo=FALSE}
+#df %>%
+#  ggplot(aes(Fat))+
+#  stat_boxplot(geom ='errorbar')+
+#  geom_boxplot(col="black",
+#               fill="#D6604D",
+#               outlier.color = "darkred",
+#               outlier.shape = 4,
+#               outlier.size = 3,
+#               size=1,
+#               coef=1.5)+
+#  labs(title = "Boxplot")
+
+boxplot(df$Fat,
+        horizontal = T,
+        col = "#D6604D",
+        main = "Boxplot")
+
+```
+
+
+#### Histograma
+
+Nos provee de una vista sobre la densidad de la data. Entre más altas las barras implica que contiene valores más comunes de los datos.
+
+```{r, fig.align="center", echo=FALSE, message=FALSE}
+df %>%
+  ggplot(aes(Fat))+
+  geom_histogram(bins = 5,
+                 fill="#D6604D",
+                 col="black")+
+  labs(y="",
+       title="Histograma")
+
+df %>%
+  mutate(class = factor(case_when(
+    Fat <= 15.5 ~ "8.5-15.5",
+    Fat >=16 & Fat <=22 ~ "15.5-22.5",
+    Fat >=23 & Fat <=29 ~ "22.5-29.5",
+    Fat >=30 & Fat <=36 ~ "29.5-36.5",
+    Fat >=37 ~ "36.5-43.5"),levels = c("8.5-15.5","15.5-22.5","22.5-29.5","29.5-36.5","36.5-43.5")))%>%
+  count(class)%>%
+  mutate(freq = round((n/sum(n))*100, digits = 4))
+```
+
+#### Ojiva
+
+```{r fig.align="center", echo=FALSE, message=FALSE}
+
+
+df %>% 
+  ggplot(aes(Fat))+
+  geom_line(stat = "ecdf", col="#D6604D")+
+  labs(y="",
+       title="Ojiva")
+
+df %>%
+  mutate(class = factor(case_when(
+    Fat <= 15.5 ~ "8.5-15.5",
+    Fat >=16 & Fat <=22 ~ "15.5-22.5",
+    Fat >=23 & Fat <=29 ~ "22.5-29.5",
+    Fat >=30 & Fat <=36 ~ "29.5-36.5",
+    Fat >=37 ~ "36.5-43.5"),levels = c("8.5-15.5","15.5-22.5","22.5-29.5","29.5-36.5","36.5-43.5")))%>%
+  count(class)%>%
+  mutate(freq = (n/sum(n))*100,
+         Freq = cumsum(freq))
+```
+
+
+
+
+
+#### Gráfico de tallo y hoja
+
+```{r fig.align="center", echo=FALSE, message=FALSE}
+stem(df$Fat)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

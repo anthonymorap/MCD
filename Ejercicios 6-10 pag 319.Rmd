@@ -1,0 +1,57 @@
+---
+title: "Ejercicios 6-10 pag 319"
+author: "Anthony mora"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+En los ejercicios 6 a 10, suponga que las puntuaciones de CI se distribuyen normalmente
+con una media de 100 y una desviación estándar de 15.
+
+6. Calcule la probabilidad de que una persona elegida al azar obtenga una puntuación de CI menor que 115.
+
+```{r}
+p6 = pnorm(115, 100, 15)
+```
+```{r echo=FALSE}
+paste("La probabilidad de que una persona elegida al azar obtenga una puntuación de CI menor que 115 es de ", round((p6*100), 2),"%", sep="")
+```
+
+7. Calcule la probabilidad de que una persona elegida al azar obtenga una puntuación de CI mayor que 118.
+
+```{r}
+p7 = pnorm(118, 100, 15, lower.tail = F)
+```
+```{r echo=FALSE}
+paste("La probabilidad de que una persona elegida al azar obtenga una puntuación de CI mayor que 118 es de ", round((p7*100), 2), "%", sep="") 
+```
+
+8. Calcule la probabilidad de que una persona elegida al azar obtenga una puntuación de CI comprendida entre 88 y 112.
+
+```{r}
+p8 = pnorm(112, 100, 15) - pnorm(88, 100, 15)
+```
+```{r echo=FALSE}
+paste("La probabilidad de que una persona elegida al azar obtenga una puntuación de CI comprendida entre 88 y 112 es de ", round((p8*100), 2), "%", sep="") 
+```
+
+9. Si se seleccionan 25 personas al azar, calcule la probabilidad de que la media de su puntuación de CI sea menor que 103.
+
+```{r}
+p9 = pnorm(103, 100, 15/sqrt(25))
+```
+```{r echo=FALSE}
+paste("La probabilidad de que una persona elegida al azar de una muestra de 25 personas obtenga una puntuación de CI menor que 103 es de ", round((p9*100), 2), "%", sep="") 
+```
+
+10. Si se seleccionan 100 personas al azar, calcule la probabilidad de que la media de su puntuación de CI sea mayor que 103.
+
+```{r}
+p10 = pnorm(103, 100, 15/sqrt(100), lower.tail = F)
+```
+```{r echo=FALSE}
+paste("La probabilidad de que una persona elegida al azar de una muestra de 100 obtenga una puntuación de CI mayor que 103 es de ", round((p10*100), 2), "%", sep="") 
+```

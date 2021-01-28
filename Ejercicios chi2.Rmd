@@ -1,0 +1,577 @@
+---
+title: "Ejercicios chi cuadrado"
+author: "Anthony Mora"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: zenburn
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Para los ejercicios del 11 a 19, siga los siguientes pasos:
+
+a. Establezca las hipótesis
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+d. Tome la decisión
+e. Resuma los resultados
+
+Utilice el método tradicional de prueba de hipótesis, a menos que se especifique lo contrario.
+
+----
+
+## Ejercicio 11
+
+Una encuesta sobre las causas por las que personas seleccionadas al azar perdieron sus empleos produjo los siguientes resultados. 
+
+```{r Base de datos ejercicio 11}
+# Cargando los datos
+df_11 = data.frame((cbind(cierre_de_la_compania = c(26),
+                          posicion_eliminada = c(18),
+                          trabajo_insuficiente = c(28))))
+df_11
+```
+```{r Matriz datos observados 11}
+# Matriz de frecuencias observadas
+obs_11 = cbind(cierre_de_la_compania = c(26),
+               posicion_eliminada = c(18),
+               trabajo_insuficiente = c(28))
+
+```
+
+
+En un nivel de $\alpha = 0.05$, pruebe la afirmación de que el número de respuestas está distribuido equitativamente. ¿Cree que los resultados podrían ser diferentes si el estudio se hubiera hecho hace 10 años?
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{Las causas por las que desemplean a las personas se distribuyen uniforme}$$
+$$H_1 : \text{Las causas por las que desemplean a las personas no se distribuyen uniforme}$$
+
+Como asumimos que estas causas tienen una distribución uniforme la probabilidad de cada una será $p=\frac{1}{3}$, el total de las frecuencias observadas es 72 como la $3^{era}$ parte de 72 es 24, esta es la frecuencia que esperamos para cada causa.
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r Matriz datos esperados 11}
+# Matriz de frecuencias esperadas
+esp_11 = cbind(cierre_de_la_compania = c(24),
+               posicion_eliminada = c(24),
+               trabajo_insuficiente = c(24))
+
+```
+
+```{r Obteniendo valor critico y de prueba 11}
+# Valores critico y de prueba
+chi2_crit = sum((obs_11 - esp_11)^2 / esp_11)
+chi2_prue = qchisq(p = 0.95, df = 2)
+```
+El valor prueba para nuestros datos será `r round(chi2_crit,2)`, mientras que el valor de crítico será `r round(chi2_prue,2)`
+
+```{r Chi2 test 11}
+# Prueba de chi-cuadrada en R
+chi_test_11 = chisq.test(obs_11, p = rep(1/3,3))
+chi_test_11
+```
+
+d. Tome la decisión
+
+Con un $\alpha = 0.05$ y 2 grados de libertad hemos obtenido un valor de prueba menor que nuestro valor crítico por lo que no tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_11[["p.value"]],2)` que es superior a $\alpha = 0.05$ tenemos suficiente evidencia para afirmar que la distribución de las causas por las que desemplean a las personas se hubiera mantenido igual 10 años después.
+
+----
+
+## Ejercicio 12
+
+Un gerente de un restaurant leyó que el lugar donde la gente consumía comida para llevar se distribuye de la siguiente manera: casa 53%, vehículo 19%, trabajo 14%, otros 14%.
+
+
+Una encuesta de 300 personas seleccionadas al azar mostró los siguientes resultados:
+
+```{r Base de datos ejercicio 12}
+# Cargando los datos 
+df_12 = data.frame((cbind(casa = c(142),
+                          vehiculo= c(57),
+                          trabajo = c(51),
+                          otros = c(50))))
+df_12
+total12 = sum(df_12)
+```
+
+En un nivel de $\alpha = 0.01$, ¿se puede concluir que la distribución es la indicada? ¿Dónde querría un restaurante de comida rápida dirigir sus anuncios?
+
+
+
+a. Establezca las hipótesis
+
+
+$$H_0 : \text{La distribución de los lugares donde la gente consume comida para llevar es la indicada}$$
+
+$$H_1 : \text{La distribución de los lugares donde la gente consume comida para llevar no es la indicada}$$
+
+
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r Valores esperados 12}
+# Matriz de frecuencias esperadas
+prob_12 = cbind(casa = c(0.53), 
+               vehiculo= c(0.19), 
+               trabajo = c(0.14), 
+               otros = c(0.14))
+esp_12 = prob_12*total12
+
+```
+
+
+```{r Obteniendo valor critico y de prueba 12}
+# Valores critico y de prueba
+chi2_crit_12 = sum((df_12 - esp_12)^2 / esp_12)
+chi2_prue_12 = qchisq(p = 0.99, df = 3)
+```
+
+
+El valor de prueba para nuestros datos será `r round(chi2_crit_12,2)`, mientras que el valor crítico será `r round(chi2_prue_12,2)`
+
+```{r Chi2 test 12}
+# Prueba de chi-cuadrada en R
+chi_test_12 = chisq.test(df_12, p = prob_12)
+chi_test_12
+```
+
+d. Tome la decisión
+
+Con un $\alpha = 0.01$ y 3 grados de libertad hemos obtenido un valor de prueba menor que nuestro valor crítico por lo que no tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_12[["p.value"]],2)` que es superior a $\alpha = 0.01$  tenemos suficiente evidencia para afirmar que la distribución de los lugares donde la gente consume comida para llevar se distribuye con las frecuencias indicadas.
+
+Concluimos pues, que la mejor opción para anuncios de comida rápida es en la casa.
+
+----
+
+
+## Ejercicio 13
+
+13.	Una encuesta a personas seleccionadas al azar encontró que el 62% de los encuestados dijeron que nunca miraban los canales de compras en casa en la televisión por cable, el 23% afirmó que miraban los canales raramente, el 11% los miraban ocasionalmente, y el 4% frecuentemente. Se encuestó a un grupo de 200 estudiantes universitarios seleccionados al azar; 105 dijeron que nunca miraban los canales de compras en casa, 72 que los miraban rara vez, 13 que los miraban ocasionalmente, y 10 los miraban con frecuencia. En un nivel de α = 0.05, ¿se puede concluir que los estudiantes universitarios difieren en su preferencia por los canales de compra de casas? 
+
+
+```{r Base de datos ejercicio 13}
+# Cargando los datos 
+df_13 = data.frame((cbind(nunca = c(105),
+                          rara_vez= c(72),
+                          ocasionalmente = c(13),
+                          con_frecuencia = c(10))))
+df_13
+total13 = sum(df_13)
+```
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{La distribución de las preferencias de los estudiantes universitarios por los canales de compra en casa es la indicada}$$
+
+$$H_1 : \text{La distribución de las preferencias de los estudiantes universitarios por los canales de compra en casa no es la indicada}$$
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+
+```{r Valores esperados 13}
+# Matriz de frecuencias esperadas
+prob_13= cbind(nunca = c(0.62),
+                rara_vez= c(0.23),
+                ocasionalmente = c(0.11),
+                con_frecuencia = c(0.04))
+esp_13 = prob_13*total13
+
+```
+
+```{r Obteniendo valor critico y de prueba 13}
+# Valores critico y de prueba
+chi2_crit_13 = sum((df_13 - esp_13)^2 / esp_13)
+chi2_prue_13 = qchisq(p = 0.95, df = 3)
+pchisq(chi2_crit_13, df = 3, lower.tail = F)
+```
+
+
+El valor de prueba para nuestros datos será `r round(chi2_crit_13,2)`, mientras que el valor crítico será `r round(chi2_prue_13,2)`
+
+```{r Chi2 test 13}
+# Prueba de chi-cuadrada en R
+chi_test_13 = chisq.test(df_13, p = prob_13)
+chi_test_13
+
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.05$ y 3 grados de libertad hemos obtenido un valor de prueba mayor que nuestro valor crítico por lo que  tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_13[["p.value"]],2)` que es inferior a $\alpha = 0.05$ no tenemos suficiente evidencia para afirmar que la distribución de las preferencias de los estudiantes universitarios por los canales de compra en casa se distribuyen con las frecuencias indicadas.
+
+----
+
+## Ejercicio 14
+
+14.	El censo de 2010 indicó los siguientes porcentajes de medios de transporte para trabajadores mayores de 15 años. 
+
+```{r}
+# Probabilidades indicadas 
+prob_14 = data.frame((cbind(vehiculo_solo = c(0.757),
+                          vehiculo_compartido= c(0.122),
+                          publico = c(0.047),
+                          caminaron = c(0.029),
+                          otros = c(0.012),
+                          desde_casa = c(0.033))))
+prob_14
+```
+
+```{r Base de datos ejercicio 14}
+# Cargando los datos 
+df_14 = data.frame((cbind(vehiculo_solo = c(320),
+                          vehiculo_compartido= c(100),
+                          publico = c(30),
+                          caminaron = c(20),
+                          otros = c(10),
+                          desde_casa = c(20))))
+df_14
+total14 = sum(df_14)
+```
+Una muestra aleatoria de trabajadores encontró que 320 condujeron solos, 100 compartieron vehículo, 30 utilizaron transporte público, 20 caminaron, 10 utilizaron otros medios de transporte y 20 trabajaron en casa. 
+
+En un nivel Use α = 0.05, ¿hay pruebas suficientes para concluir que las proporciones de trabajadores que utilizan cada tipo de transporte difieren de las que figuran en el informe del censo? 
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{La distribución del uso de medios de transporte por los trabajadores es la indicada}$$
+
+$$H_1 : \text{La distribución del uso de medios de transporte por los trabajadores no es la indicada}$$
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r}
+# Valores critico y de prueba
+esp_14 = prob_14*total14
+chi2_crit_14 = sum((df_14 - esp_14)^2 / esp_14)
+chi2_prue_14 = qchisq(p = 0.95, df = 5)
+pchisq(chi2_crit_14, df = 5, lower.tail = F)
+```
+
+
+El valor de prueba para nuestros datos será `r round(chi2_crit_14,2)`, mientras que el valor crítico será `r round(chi2_prue_14,2)`
+
+```{r Chi2 test 14}
+# Prueba de chi-cuadrada en R
+chi_test_14 = chisq.test(df_14, p = as.matrix(prob_14))
+chi_test_14
+
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.05$ y 5 grados de libertad hemos obtenido un valor de prueba mayor que nuestro valor crítico por lo que  tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_14[["p.value"]],2)` que es inferior a $\alpha = 0.05$ no tenemos suficiente evidencia para afirmar que el uso de medios de transporte por los trabajadores se distribuyen con las frecuencias indicadas.
+
+----
+
+
+## Ejercicio 15
+
+15.	En una encuesta a hombres y mujeres seleccionados al azar se preguntó cuál era su sabor favorito de helado. La siguiente tabla muestra los resultados:
+
+
+```{r}
+# Cargando los datos 
+df_15 = data.frame((cbind(vainilla = c(49,62),
+                          chocolate= c(37,36),
+                          fresa = c(5,10),
+                          otros = c(9,2))),
+                   row.names = c("hombres", "mujeres"))
+df_15
+```
+
+En un nivel de α = 0.05, ¿se puede concluir que el sabor de helado favorito es independiente del género? 
+
+a. Establezca las hipótesis
+
+
+$$H_0 : \text{La preferencia en sabor de helado es independiente del género}$$
+
+$$H_1 : \text{La preferencia en sabor de helado no es independiente del género}$$
+
+
+
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r}
+suma_cols = colSums(df_15)
+suma_rows = rowSums(df_15)
+
+esp_15 = t(suma_cols%*%t(suma_rows))/sum(df_15)
+
+chi2_crit_15 = sum((df_15-esp_15)^2 / esp_15)
+chi2_prue_15 = qchisq(p = 0.95, df = 3)
+pchisq(chi2_crit_15, df = 3, lower.tail = F)
+
+```
+El valor de prueba para nuestros datos será `r round(chi2_crit_15,2)`, mientras que el valor crítico será `r round(chi2_prue_15,2)`
+
+
+```{r}
+chi_test_15 = chisq.test(df_15)
+chi_test_15
+
+```
+d. Tome la decisión
+
+Con un $\alpha = 0.05$ y 3 grados de libertad hemos obtenido un valor de prueba menor que nuestro valor crítico por lo que no tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_15[["p.value"]],2)` que es superior a $\alpha = 0.05$ tenemos suficiente evidencia para afirmar la preferencia en sabor de helado es independiente del género.
+
+----
+
+## Ejercicio 16
+
+16.	El dueño de una pizzería desea determinar si el tipo de pizza que una persona selecciona está relacionado con la edad del individuo. En la siguiente tabla se muestran los datos obtenidos de una muestra de clientes según la edad y el tipo de pizza que ordena:
+
+```{r}
+# Cargando los datos 
+df_16 = data.frame((cbind(masa_fina = c(12,18,24,52),
+                          pepperoni= c(21,76,50,30),
+                          queso_hongos = c(39,52,40,12),
+                          doble_queso = c(71,87,47,28))),
+                   row.names = c("10-19", "20-29","30-39","40-49"))
+df_16
+```
+
+En un nivel de α = 0.10, ¿la edad del comprador está relacionada con el tipo de pizza pedida? Utilice el método del valor P. 
+
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{El tipo de pizza pedida es independiente de la edad del comprador}$$
+
+$$H_1 : \text{El tipo de pizza pedida no es independiente de la edad del comprador}$$
+
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+
+```{r}
+suma_cols = colSums(df_16)
+suma_rows = rowSums(df_16)
+
+esp_16 = t(suma_cols%*%t(suma_rows))/sum(df_16)
+
+chi2_crit_16 = sum((df_16-esp_16)^2 / esp_16)
+chi2_prue_16 = qchisq(p = 0.90, df = 9)
+pchisq(chi2_crit_16, df = 9, lower.tail = F)
+```
+
+El valor de prueba para nuestros datos será `r round(chi2_crit_16,2)`, mientras que el valor crítico será `r round(chi2_prue_16,2)`
+
+```{r}
+chi_test_16 = chisq.test(df_16)
+chi_test_16
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.10$ y 9 grados de libertad hemos obtenido un valor de prueba mayor que nuestro valor crítico por lo que tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_16[["p.value"]],2)` que es inferior a $\alpha = 0.10$ tenemos suficiente evidencia para afirmar que el tipo de pizza pedida no es independiente de la edad del comprador. 
+
+La edad está relacionada con el tipo de pizza pedida.
+
+----
+
+
+## Ejercicio 17
+
+17.	La siguiente tabla muestra los resultados de una encuesta de un estudio sobre la elección de banderines vendidos a fans seleccionados al azar. Los datos se muestran en la siguiente tabla:
+
+
+```{r}
+# Cargando los datos 
+df_17 = data.frame((cbind(azul = c(519,487),
+                          amarillo= c(659,702),
+                          queso_hongos = c(876,787))),
+                   row.names = c("hombres", "mujeres"))
+df_17
+```
+
+ En un nivel de α = 0.10, ¿el color del banderín comprado es independiente del género del individuo? 
+ 
+ 
+a. Establezca las hipótesis
+
+$$H_0 : \text{El color del banderín comprado es independiente del género}$$
+
+$$H_1 : \text{El color del banderín comprado no es independiente del género}$$
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+
+```{r}
+suma_cols = colSums(df_17)
+suma_rows = rowSums(df_17)
+
+esp_17 = t(suma_cols%*%t(suma_rows))/sum(df_17)
+
+chi2_crit_17 = sum((df_17-esp_17)^2 / esp_17)
+chi2_prue_17 = qchisq(p = 0.90, df = 2)
+pchisq(chi2_crit_17, df = 2, lower.tail = F)
+```
+El valor de prueba para nuestros datos será `r round(chi2_crit_17,2)`, mientras que el valor crítico será `r round(chi2_prue_17,2)`
+
+```{r}
+chi_test_17 = chisq.test(df_17)
+chi_test_17
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.10$ y 2 grados de libertad hemos obtenido un valor de prueba mayor que nuestro valor crítico por lo que tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_17[["p.value"]],2)` que es inferior a $\alpha = 0.10$ tenemos suficiente evidencia para afirmar el color del banderín comprado depende del género del comprador. 
+
+----
+
+## Ejercicio 18
+
+18.	En una encuesta realizada a niños de 8 a 11 años seleccionados al azar, se obtuvieron datos sobre lo que creen que sus padres deberían hacer con el dinero de un crédito fiscal de 400 dólares. Los resultados se muestran en la siguiente tabla:
+
+
+```{r}
+# Cargando los datos 
+df_18 = data.frame((cbind(guardarlo = c(162,147),
+                          hijos= c(132,147),
+                          no_sabe = c(6,6))),
+                   row.names = c("hombres", "mujeres"))
+df_18
+```
+
+En un nivel de α = 0.10, ¿existe una relación entre lo que piensan o sienten los niños y el género de los niños?
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{Los pensamientos de los niños son independientes del género}$$
+
+$$H_1 : \text{Los pensamientos de los niños no son independientes del género}$$
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r}
+suma_cols = colSums(df_18)
+suma_rows = rowSums(df_18)
+
+esp_18 = t(suma_cols%*%t(suma_rows))/sum(df_18)
+
+chi2_crit_18 = sum((df_18-esp_18)^2 / esp_18)
+chi2_prue_18 = qchisq(p = 0.90, df = 2)
+pchisq(chi2_crit_18, df = 2, lower.tail = F)
+```
+El valor de prueba para nuestros datos será `r round(chi2_crit_18,2)`, mientras que el valor crítico será `r round(chi2_prue_18,2)`
+
+```{r}
+chi_test_18 = chisq.test(df_18)
+chi_test_18
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.10$ y 2 grados de libertad hemos obtenido un valor de prueba menor que nuestro valor crítico por lo que no tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_18[["p.value"]],2)` que es superior a $\alpha = 0.10$ tenemos suficiente evidencia para afirmar que los pensamientos de los niños no dependen de su género. 
+
+----
+
+## Ejercicio 19
+
+19.	En una encuesta realizada a 60 hombres y 60 mujeres seleccionados al azar se les preguntó si estarían contentos de pasar el resto de sus carreras con sus empleadores actuales. Los resultados se muestran en la siguiente tabla:
+
+
+```{r}
+# Cargando los datos 
+df_19 = data.frame((cbind(si = c(40,36),
+                          no= c(15,9),
+                          indeciso = c(5,15))),
+                   row.names = c("hombres", "mujeres"))
+df_19
+```
+
+En un nivel de α = 0.05, ¿se puede concluir que las proporciones son iguales? Si no son iguales, dé una posible razón de la diferencia. 
+
+a. Establezca las hipótesis
+
+$$H_0 : \text{La decisión de pasar el resto de su carrera con el empleador actual es independiente del género}$$
+
+$$H_1 : \text{La decisión de pasar el resto de su carrera con el empleador actual no es independiente del género}$$
+
+b. Encuentre el valor crítico
+c. Calcule el valor de prueba
+
+```{r}
+suma_cols = colSums(df_19)
+suma_rows = rowSums(df_19)
+
+esp_19 = t(suma_cols%*%t(suma_rows))/sum(df_19)
+
+chi2_crit_19 = sum((df_19-esp_19)^2 / esp_19)
+chi2_prue_19 = qchisq(p = 0.95, df = 2)
+pchisq(chi2_crit_19, df = 2, lower.tail = F)
+```
+El valor de prueba para nuestros datos será `r round(chi2_crit_19,2)`, mientras que el valor crítico será `r round(chi2_prue_19,2)`
+
+```{r}
+chi_test_19 = chisq.test(df_19)
+chi_test_19
+```
+
+
+d. Tome la decisión
+
+Con un $\alpha = 0.05$ y 2 grados de libertad hemos obtenido un valor de prueba mayor que nuestro valor crítico por lo que tenemos evidencia suficiente para rechazar la hipótesis nula.
+
+e. Resuma los resultados
+
+Con un p-value de `r round(chi_test_19[["p.value"]],2)` que es inferior a $\alpha = 0.05$ tenemos suficiente evidencia para afirmar que la decisión de pasar su carrera con su empleador actual depende del género del trabajador. 
+
+Esto pudiera deberse a una facilidad para tener relaciones importantes y díficiles de dejar por parte de uno de los dos géneros. 
+
+

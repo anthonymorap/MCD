@@ -1,0 +1,220 @@
+---
+title: "Practica en grupo 4"
+author: "Anthony mora"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: zenburn
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Funciones
+monte.carlo.int = function(f, n, a, b){
+  u = runif(n, min = a, max = b)
+  estint = mean(f(u))*(b-a)
+  yy = (f(u)*(b-a))^2
+  var = var(f(u)*(b-a))/n
+  se1 = sqrt((sum(yy)/n-estint^2)/n)
+  se2 = sqrt(var)
+  ci = c(estint-1.96*se1,estint+1.96*se1)
+  list("Int"=estint,
+       "Var"=var,
+       "SE1"=se1,
+       "SE2"=se2,
+       "CI"=ci)
+}
+
+fnorm = function(x) (exp(-(x)^2/2)/(sqrt(2*pi)))
+```
+
+
+## Ejercicio 5.1
+
+Compute a Monte Carlo estimate of:
+
+$$ \int_0^{\pi/3}sin \ t \ dt $$
+and compare your estimate with the exact value of the integral.
+
+
+```{r}
+x = runif(10000, min = 0, max = (pi/3))
+monte_carlo_5.1 = mean(sin(x)) * ((pi/3))
+f = function(x){
+  sin(x)
+}
+int_5.1 = integrate(f, lower = 0, upper = (pi/3))
+diff_5.1 = int_5.1[["value"]] - monte_carlo_5.1
+monte.carlo.int(function(x)sin(x),10000,0,(pi/3))
+```
+La diferencia entre nuestra estimación utilizando Monte Carlo integration con una muestra de 10,000 observaciones y el valor exacto de la integral es igual a `r diff_5.1`
+
+## Ejercicio 5.2
+
+Refer to Example 5.3. Compute a Monte Carlo estimate of the standard normal cdf, by generating from the Uniform(0,x) distribution. Compare your estimates with the normal cdf function pnorm. Compute an estimate of the variance of your Monte Carlo estimate of Φ(2), and a 95% confidence interval for Φ(2).
+
+```{r 5.2 intervalo 0,1}
+x = seq(from = 0.1, to = 2.5, length = 10)
+u = runif(10000)
+cdf = numeric()
+for (i in 1:length(x)) {
+  g = x[i] * exp(-(u * x[i])^2 / 2)
+  cdf[i] = mean(g) / sqrt(2 * pi) + 0.5
+}
+
+phi = pnorm(x)
+print(round(rbind(x, cdf, phi), 3))
+monte.carlo.int(fnorm,10000,-3,2.5)
+```
+
+```{r 5.2 intervalo 0,x}
+x = seq(from = 0, to = 2.5, length = 10)
+for (i in 1:length(x)) {
+  u = runif(10000, min = 0, max = x[i])
+  cdf[i] = mean(exp(-(u)^2 / 2)) * x[i] / (sqrt(2 * pi)) + 0.5
+}
+
+phi = pnorm(x)
+print(round(rbind(x, cdf, phi, diff = cdf - phi), 3))
+```
+Podemos ver que la integración Monte Carlo da una buena aproximación de la función cumulativa de la distribución normal. La estimación es mejor para valores cercanos al centro de la distribución.
+
+
+```{r Estimacion de varianza}
+u = runif(10000, min = 0, max = 2)
+phi.2 = mean(exp(-(u)^2 / 2)) * 2 / (sqrt(2 * pi)) + 0.5
+
+
+m = 10000
+z = rnorm(m)
+g = (z < 2)
+estint = mean(g)
+estvar = mean((g - mean(g))^2) / m
+intercont = data.frame(inferior = estint - (1.96*sqrt(estvar)),
+                       superior = estint + (1.96*sqrt(estvar)))
+intercont
+
+monte.carlo.int(fnorm,10000,-3,2)
+
+
+```
+Nuestra estimación arroja un valor de `r paste(round(estint, 2)*100, "%")`
+para la Φ(2), para la varianza da un valor de `r estvar`.
+
+
+## Ejercicio 5.3
+
+Compute a Monte Carlo estimate $\hat\theta$ of:
+
+$$ \int_0^{0.5}e^{-x} \ dx $$
+
+by sampling from Uniform(0, 0.5), and estimate the variance of $\hat\theta$. Find another Monte Carlo estimator $\theta^*$ by sampling from the exponential distribution. Which of the variances (of $\hat\theta$ and $\hat\theta^*$) is smaller, and why?
+
+```{r}
+m = 10000
+x = runif(m, min = 0, max = 0.5)
+theta.hat = mean(exp(-x)) * (0.5)
+print(theta.hat)
+
+mean((exp(-x) - theta.hat)^2) / m
+monte.carlo.int(function(x)exp(-x),10000,0,0.5)
+```
+
+
+
+## Ejercicio 5.6
+
+In Example 5.7 the control variate approach was illustrated for Monte Carlo integration of
+
+
+$$ \int_0^{1}e^x \ dx $$
+Now consider the antithetic variate approach. Compute Cov(eU, e1−U) and V ar(eU + e1−U), where U ∼ Uniform(0,1). What is the percent reduction in variance of ˆθ that can be achieved using antithetic variates (compared with simple MC)?
+
+```{r}
+m = 10000
+u = runif(m)
+f.5.6 = function(x){exp(x)}
+x1 = f.5.6(u)
+x2 = f.5.6(1-u)
+data = rbind(MC = c(mean(x1), var(x1)/m),
+             Antithetic = c(mean((x1 + x2)/2), ((var(x1)+cov(x1,x2))/(2*m))))
+colnames(data) = c("Int", "Var")
+data
+integrate(f.5.6,0,1)
+```
+
+## Ejercicio 5.10
+
+Use Monte Carlo integration with antithetic variables to estimate:
+
+
+$$ \int_0^{1}\dfrac{e^{-x}}{1+x^2} \ dx $$
+
+
+```{r}
+m = 10000
+u = runif(m)
+f.5.10 = function(x){exp(-x)/(1+(x^2))}
+x1 = f.5.10(u)
+x2 = f.5.10(1-u)
+data = rbind(MC = c(mean(x1), var(x1)/m),
+             Antithetic = c(mean((x1 + x2)/2), (1/4*(var(x1) + var(x2) + (2*cov(x1,x2))))))
+colnames(data) = c("Int", "Var")
+data
+integrate(f.5.10,0,1)
+var.dif = (data[2,2]/data[1,2])-1
+var.dif
+```
+and find the approximate reduction in variance as a percentage of the variance without variance reduction.
+
+
+
+
+
+## Ejercicio 5.14
+
+Obtain a Monte Carlo estimate of
+
+$$ \int_0^{\infty}\dfrac{x^2}{\sqrt{2\pi}}e^{\frac{-x^{2}}{2}} \ dx $$
+by importance sampling.
+
+
+
+```{r}
+m = 10000
+u = runif(m, min = 0, max = 2)
+f.5.14 = function(x){(x^2)*exp(-((x^2)/2))}
+x1 = f.5.14(u)
+mean(x1)*2*(1/sqrt(2*pi))
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

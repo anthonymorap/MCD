@@ -1,0 +1,127 @@
+---
+title: "Ejercicios individuales - Autotaller"
+author: "Anthony mora"
+date: "11/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Ejercicio 1.
+
+- Usa estas ideas para simular 100000 partidas del primer juego del Caballero De Méré. Haz una tabla de frecuencias relativas de partidas ganadoras / perdedoras.
+
+```{r}
+numRepeticiones = 100000
+repeticiones = replicate(n = numRepeticiones,{
+  partida = sample(1:6, size = 4, replace = TRUE)
+})
+
+victorias = sum((colSums(repeticiones == 6) > 0))
+
+porcentaje_victorias = round(victorias/numRepeticiones,2)*100
+porcentaje_victorias
+```
+
+- Calcula la probabilidad teórica de ganar en una partida de ese juego y compárala con los resultados de la simulación.
+
+```{r}
+(prob_teorica = round((1/6)*4,2)*100)
+```
+
+
+Ejercicio 2
+
+- Vamos a hacer el Ejercicio 1 del Tutorial 4 sobre variables aleatorias. Lo que queremos es simular n=1000000 (un millón) tiradas de dos dados, y calcular la tabla de frecuencias relativas de la variable aleatoria X={suma de los dos dados}
+
+```{r}
+numRepeticiones = 1000000
+repeticiones = replicate(n = numRepeticiones,{
+  dado1 = sample(1:6, size = 1, replace = TRUE)
+  dado2 = sample(1:6, size = 1, replace = TRUE)
+  dado1 + dado2
+})
+
+(tabla_prob_simulada = round(table(repeticiones)/1000000,4))
+```
+
+
+```{r}
+dado1 = c(1:6)
+dado2 = c(1:6)
+espacio_muestral = unique(t(combn(c(dado1,dado2),2)))
+suma = espacio_muestral[,1] + espacio_muestral[,2]
+
+(tabla_prob_teorica = round(table(suma)/36,2))
+```
+
+
+
+- ¿Cuál es la media de esas sumas (las simuladas)? ¿Y cuál era la media teórica?
+
+```{r}
+(media_prob_simulada = sum(c(2:12)*tabla_prob_simulada))
+(media_prob_teorica = sum(c(2:12)*tabla_prob_teorica))
+```
+
+Ejercicio 3
+
+- Usando replicate y el fragmento de código que acabamos de ver, simula 10000 extracciones de la bola en el ejemplo anterior.
+
+```{r}
+numRepeticiones = 10000
+repeticiones = replicate(n = numRepeticiones,{
+(dado = sample(1:6, 1))
+if(dado < 3){
+  sample(c("b", "n"), 1, prob = c(3, 2)) # urna 1
+} else {
+  sample(c("b", "n"), 1, prob = c(4, 1)) # urna 1
+}
+})
+```
+
+
+- Haz una tabla de frecuencias relativas de bola blanca y negra.
+
+```{r}
+(tabla_prob_simulada = table(repeticiones)/10000)
+```
+
+- Calcula la probabilidad teórica y compárala con la simulación.
+
+```{r}
+prob_menor_3 = 2/6
+prob_mayor_igual_3 = 4/6
+prob_blanca_urna1 = 3/5
+prob_negra_urna1 = 2/5
+prob_blanca_urna2 = 4/5
+prob_negra_urna2 = 1/5
+
+prob_blanca = (prob_menor_3 * prob_blanca_urna1) + (prob_mayor_igual_3 * prob_blanca_urna2)
+prob_negra = (prob_menor_3 * prob_negra_urna1) + (prob_mayor_igual_3 * prob_negra_urna2)
+
+prob_blanca
+prob_negra
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

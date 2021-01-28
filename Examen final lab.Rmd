@@ -1,0 +1,293 @@
+---
+title: "Examen Final Lab"
+author: "Anthony Mora - ID: 1097694"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: zenburn
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(boot)
+library(bbmle)
+```
+
+
+## Ejercicio 1
+
+Escriba el código R (script) para un algoritmo que usa el método lineal congruencial (aX + b) y que sea óptimo en relación con los parámetros. Realice prueba de generación de n = 1000 valores. Úselos para aplicar el método inverso de generación de números (pseudo) aleatorios para una distribución de probabilidad especifica (seleccione la de su preferencia).
+
+```{r}
+# Metodo lineal congruencial
+n = 1000
+random.number = numeric(n)
+current_time = Sys.time()
+numericDates = as.numeric(current_time)
+random.seed = numericDates
+
+for (j in 1:n){
+  random.seed = (171171 *random.seed + 13) %% 2^31
+  random.number[j] = random.seed/2^31
+}
+
+hist(random.number)
+plot(random.number)
+acf(random.number)
+pacf(random.number)
+
+```
+
+```{r}
+#Exponencial
+samples_exp = qexp(random.number)
+hist(samples_exp)
+```
+
+La prueba de ACF nos confirma baja autocorrelación entre nuestros números pseudaleatorios. Y el último histograma nos confirma que mediante el método inverso de generación de números logramos generar una distribución exponencial.
+
+
+
+## Ejercicio 2
+
+Un investigador está interesado en conocer cómo las variables, como el GRE, el GPA y el prestigio de la institución de pregrado, afectan la admisión en la escuela de posgrado de una universidad. La variable de respuesta, admit(1) / no admit(o), es una variable binaria. En el archivo “binary_admision_model.csv” se encuentra la data de un conjunto de 400 estudiantes que han aplicado a la escuela de postgrado en el pasado reciente. Trataremos las variables gre y gpa como continuas. La variable rank toma los valores del 1 al 4. Las instituciones con un rango de 1 tienen el mayor prestigio, mientras que las que tienen un rango de 4 tienen el más bajo.
+
+```{r}
+data <- read_csv("Data/binary_admision_model.csv")
+summary(data)
+data <- data.frame(data)
+```
+A.	Determinar los intervalos de confianza de los promedios de las variables GRE y GPA
+
+```{r}
+# Función para obtener los promedios de nuestras variables
+boot_means = function(data, indices, col){ 
+  dt<-data[indices,] 
+  mean(dt[,col]) 
+} 
+# Seed
+set.seed(12345)
+
+#### Media de GRE
+myBootstrap.gre <- boot(data, boot_means, R=1000,col="gre")
+(ci.gre = boot.ci(myBootstrap.gre,level=0.95, type = "norm")$normal)
+#### Media de GPA
+myBootstrap.gpa <- boot(data, boot_means, R=1000,col="gpa")
+(ci.gpa = boot.ci(myBootstrap.gpa,level=0.95, type = "norm")$normal)
+```
+
+
+B.	Determinar los intervalos de confianza de las correlaciones de Pearson y Spearman entre las variables: (GRE y GPA), (GPA, Rank), (GRE, Rank)
+
+
+```{r}
+# Función para obtener los promedios de nuestras variables
+boot_corr = function(data, indices, col1, col2, cor_method){ 
+  dt<-data[indices,] 
+  cor(dt[,col1],dt[,col2],method=cor_method) 
+} 
+# Seed
+set.seed(12345)
+
+# Correlacion de Pearson de gre y gpa
+myBootstrap1 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "p")
+(corr1 = boot.ci(myBootstrap1,level=0.95, type = "norm")$normal)
+
+# Correlacion de spearman de gre y gpa
+myBootstrap2 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "s")
+(corr2 = boot.ci(myBootstrap2,level=0.95, type = "norm")$normal)
+
+# Correlacion de Pearson de gpa y rank
+myBootstrap3 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "p")
+(corr3 = boot.ci(myBootstrap3,level=0.95, type = "norm")$normal)
+
+# Correlacion de spearman de gpa y rank
+myBootstrap4 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "s")
+(corr4 = boot.ci(myBootstrap4,level=0.95, type = "norm")$normal)
+
+# Correlacion de Pearson de gre y rank
+myBootstrap5 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "p")
+(corr5 = boot.ci(myBootstrap5,level=0.95, type = "norm")$normal)
+
+# Correlacion de spearman de gre y rank
+myBootstrap6 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "s")
+(corr6 = boot.ci(myBootstrap6,level=0.95, type = "norm")$normal)
+```
+
+
+
+C.	¿Qué nivel de precisión tienen la estimación de los parámetros usando bootstraping en relación a la muestra de referencia? Explíquelo.
+
+```{r}
+# Correlacion de Pearson de gre y gpa
+myBootstrap1$t0 >= round(corr1[2],2) & myBootstrap1$t0 <= round(corr1[3],2)
+
+# Correlacion de spearman de gre y gpa
+myBootstrap2$t0 >= round(corr2[2],2) & myBootstrap2$t0 <= round(corr2[3],2)
+
+# Correlacion de Pearson de gpa y rank
+myBootstrap3$t0 >= round(corr3[2],2) & myBootstrap3$t0 <= round(corr3[3],2)
+
+# Correlacion de spearman de gpa y rank
+myBootstrap4$t0 >= round(corr4[2],2) & myBootstrap4$t0 <= round(corr4[3],2)
+
+# Correlacion de Pearson de gre y rank
+myBootstrap5$t0 >= round(corr5[2],2) & myBootstrap5$t0 <= round(corr5[3],2)
+
+# Correlacion de spearman de gre y rank
+myBootstrap6$t0 >= round(corr6[2],2) & myBootstrap6$t0 <= round(corr6[3],2)
+```
+
+D.	Usando el método grafico explique como  la ley de los grandes números actúa en uno de los casos.
+
+
+```{r}
+par(mfrow=c(3,2))
+hist(myBootstrap1$t,xlab = "", main = "Pearson de GRE y GPA")
+hist(myBootstrap2$t,xlab = "", main = "Spearman de GRE y GPA")
+hist(myBootstrap3$t,xlab = "", main = "Pearson de GPA y RANK")
+hist(myBootstrap4$t,xlab = "", main = "Spearman de GPA y RANK")
+hist(myBootstrap5$t,xlab = "", main = "Pearson de GRE y RANK")
+hist(myBootstrap6$t,xlab = "", main = "Spearman de GRE y RANK")
+```
+
+
+E.	Comparar estos resultados usando 95% de niveles de confianza para cada caso y usando las modalidades de CI Normal y Básica. Realice una interpretación de los resultados.
+
+```{r}
+# Función para obtener los promedios de nuestras variables
+boot_means = function(data, indices, col){ 
+  dt<-data[indices,] 
+  mean(dt[,col]) 
+}
+
+# Función para obtener los promedios de nuestras variables
+boot_corr = function(data, indices, col1, col2, cor_method){ 
+  dt<-data[indices,] 
+  cor(dt[,col1],dt[,col2],method=cor_method) 
+} 
+
+# Seed
+set.seed(12345) 
+```
+
+
+Resultados con 95% de GRE y GPA
+
+```{r}
+# Intervalo de confianza de GRE
+myBootstrap = boot(data, boot_means, R=1000,col=2)
+(conf_interval1_95n = boot.ci(myBootstrap,level=0.95, type = c("norm","basic"))$normal)
+
+(conf_interval1_95b = boot.ci(myBootstrap,level=0.95, type = c("norm","basic"))$basic)
+
+# Intervalo de confianza de GPA
+myBootstrap = boot(data, boot_means, R=1000,col=3)
+(conf_interval1_95n = boot.ci(myBootstrap,level=0.95, type = c("norm","basic"))$normal)
+
+(conf_interval1_95b = boot.ci(myBootstrap,level=0.95, type = c("norm","basic"))$basic)
+```
+
+Resultados con 95% de Correlaciones
+
+```{r}
+# Correlacion de Pearson de gre y gpa
+myBootstrap1 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "p")
+(corr1 = boot.ci(myBootstrap1,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de Pearson de gre y gpa
+myBootstrap1 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "p")
+(corr1 = boot.ci(myBootstrap1,level=0.95, type = c("norm","basic"))$basic)
+
+# Correlacion de spearman de gre y gpa
+myBootstrap2 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "s")
+(corr2 = boot.ci(myBootstrap2,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de spearman de gre y gpa
+myBootstrap2 = boot(data, boot_corr, R=1000,col1=2,col2=3,cor_method = "s")
+(corr2 = boot.ci(myBootstrap2,level=0.95, type = c("norm","basic"))$basic)
+
+# Correlacion de Pearson de gpa y rank
+myBootstrap3 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "p")
+(corr3 = boot.ci(myBootstrap3,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de Pearson de gpa y rank
+myBootstrap3 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "p")
+(corr3 = boot.ci(myBootstrap3,level=0.95, type = c("norm","basic"))$basic)
+
+# Correlacion de spearman de gpa y rank
+myBootstrap4 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "s")
+(corr4 = boot.ci(myBootstrap4,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de spearman de gpa y rank
+myBootstrap4 = boot(data, boot_corr, R=1000,col1=3,col2=4,cor_method = "s")
+(corr4 = boot.ci(myBootstrap4,level=0.95, type = c("norm","basic"))$basic)
+
+# Correlacion de Pearson de gre y rank
+myBootstrap5 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "p")
+(corr5 = boot.ci(myBootstrap5,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de Pearson de gre y rank
+myBootstrap5 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "p")
+(corr5 = boot.ci(myBootstrap5,level=0.95, type = c("norm","basic"))$basic)
+
+# Correlacion de spearman de gre y rank
+myBootstrap6 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "s")
+(corr6 = boot.ci(myBootstrap6,level=0.95, type = c("norm","basic"))$normal)
+
+# Correlacion de spearman de gre y rank
+myBootstrap6 = boot(data, boot_corr, R=1000,col1=2,col2=4,cor_method = "s")
+(corr6 = boot.ci(myBootstrap6,level=0.95, type = c("norm","basic"))$basic)
+```
+
+
+
+## Ejercicio 3
+
+3.	Simular el proceso de cálculo de máxima verosimilitud para una variable aleatoria X con función de densidad de probabilidad Exponencial 
+
+A.	Use el paquete bbmle de R para lambda = 3
+
+B.	Simule con tamaños de muestra 100 y 200 
+
+```{r}
+set.seed(123)
+# Muestra de 100
+x <- rexp(100, rate = 3)
+mtmp <- function(rate) {
+  -sum(dexp(x, rate, log = TRUE))
+}
+
+mle2(mtmp, start = list(rate = 3))
+```
+
+```{r}
+set.seed(123)
+# Muestra de 200
+x <- rexp(200, rate = 3)
+mtmp <- function(rate) {
+  -sum(dexp(x, rate, log = TRUE))
+}
+
+mle2(mtmp, start = list(rate = 3))
+```
+
+
+
+
+
+
+
+
+
+
+
